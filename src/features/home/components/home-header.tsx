@@ -26,6 +26,9 @@ export default function HomeHeader() {
         <button
           className="login-btn"
           type="button"
+          onClick={() => {
+            router.push("/login");
+          }}
           style={{
             display: "flex",
             alignItems: "center",
@@ -41,14 +44,7 @@ export default function HomeHeader() {
           <span className="icon" style={{ fontSize: 18 }}>
             👤
           </span>
-          <span
-            onClick={() => {
-              router.push("/login");
-            }}
-            className="login-text"
-          >
-            로그인 / 회원가입
-          </span>
+          <span className="login-text">로그인 / 회원가입</span>
         </button>
       </div>
     </header>

@@ -112,7 +112,7 @@ export default function HeroSection() {
           }}
         >
           <h2 style={{ fontSize: 24, margin: 0, fontWeight: 900 }}>
-            🌧️ 오늘은 국물 땡기는 날
+            🍽️ 오늘은 어떤 메뉴가 좋을까요?
           </h2>
 
           <div
