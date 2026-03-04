@@ -1,4 +1,4 @@
-import AppShell from "../../components/layouts/app-shell";
+import AppShell from "@/components/layouts/app-shell";
 
 export default function RecommendPage() {
   return (
