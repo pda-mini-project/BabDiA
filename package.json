@@ -19,8 +19,10 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@hiseb/confetti": "^2.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.9",
