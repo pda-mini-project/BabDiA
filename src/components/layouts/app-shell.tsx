@@ -10,7 +10,7 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-shell">
       <DesktopNav />
-      <div>
+      <div className="main-col">
         <AppHeader />
         <main className="main">{children}</main>
       </div>
