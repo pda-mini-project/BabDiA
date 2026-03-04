@@ -144,6 +144,12 @@ body {
   font-weight: 950;
 }
 
+.page-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 6px 0 24px;
+}
+
 .main-cta {
   box-shadow: 0 22px 46px rgba(79, 70, 229, 0.38);
   transition: all 0.2s ease;

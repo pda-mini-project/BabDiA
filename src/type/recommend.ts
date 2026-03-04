@@ -1,6 +1,6 @@
+/** 사진 속 프리셋 8개 기준 */
 export type PresetKey =
   | "sunny"
-  | "cloudy"
   | "rainy"
   | "cold"
   | "hot"
