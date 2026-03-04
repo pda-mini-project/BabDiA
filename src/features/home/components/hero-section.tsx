@@ -1,9 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+// 테스트용: 리셋 시간 설정 (시, 분)
+const RESET_HOUR = 11;
+const RESET_MIN = 40;
+
+function nextResetTime() {
+  const now = new Date();
+  const t = new Date(now);
+  t.setHours(RESET_HOUR, RESET_MIN, 0, 0); // 리셋 시간
+  if (now.getTime() >= t.getTime()) {
+    // 이미 지났으면 다음 날로
+    t.setDate(t.getDate() + 1);
+  }
+  return t;
+}
+
+function remainingToReset() {
+  const now = new Date();
+  const todayReset = new Date(now);
+  todayReset.setHours(RESET_HOUR, RESET_MIN, 0, 0);
+
+  const diff = todayReset.getTime() - now.getTime();
+  if (diff > 0) return diff;
+
+  // 리셋 직후 1초는 00:00:00을 유지해서 이벤트 트리거 타이밍 확보
+  if (diff > -1000) return 0;
+
+  return Math.max(0, nextResetTime().getTime() - now.getTime());
+}
+
+function formatMS(ms: number) {
+  if (ms <= 0) return "00:00:00";
+  const total = Math.floor(ms / 1000);
+  const hrs = Math.floor(total / 3600);
+  const mins = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+}
 
 export default function HeroSection() {
-  const [selectedRestaurant] = useState<string | null>(null);
+  // SSR/CSR 초기 렌더를 동일하게 맞춰 hydration mismatch 방지
+  const [left, setLeft] = useState(0);
+  const firedRef = useRef(false);
 
   const handleSpinClick = () => {
     const restaurants = [
@@ -18,6 +59,43 @@ export default function HeroSection() {
     // TODO: 추후 추천 결과 표시 구현
     console.log("추천:", restaurants[randomIdx]);
   };
+
+  useEffect(() => {
+    const updateLeft = () => {
+      const rem = remainingToReset();
+      setLeft(rem);
+
+      if (rem <= 0 && !firedRef.current) {
+        firedRef.current = true;
+        if (typeof window !== "undefined") {
+          import("@hiseb/confetti").then(({ default: confetti }) => {
+            confetti({
+              // count: 180,
+              // size: 2.8,
+              // velocity: 8,
+              // fade: true,
+              // position: { x: 0.5, y: 0.5 },
+            });
+          });
+        }
+      } else if (rem > 0) {
+        firedRef.current = false;
+      }
+    };
+
+    // 매초 업데이트
+    const id = setInterval(() => {
+      updateLeft();
+    }, 1000);
+
+    // mount 직후 비동기로 1회 동기화
+    const t = setTimeout(updateLeft, 0);
+
+    return () => {
+      clearInterval(id);
+      clearTimeout(t);
+    };
+  }, []);
 
   return (
     <section className="section" style={{ marginBottom: 48 }}>
@@ -71,7 +149,7 @@ export default function HeroSection() {
               lineHeight: 1,
             }}
           >
-            00:24:18
+            {formatMS(left)}
           </div>
 
           <button
