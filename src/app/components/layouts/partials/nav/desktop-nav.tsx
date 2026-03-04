@@ -2,28 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { navItems } from "./nav-items";
 
-const menus = [
-  { label: "홈", href: "/" },
-  { label: "점메추", href: "/recommend" },
-  { label: "식당 추가", href: "/restaurants/new" },
-];
-
-export default function Sidebar() {
+export default function DesktopNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="sidebar">
+    <aside className="desktop-nav">
       <div className="logo">🍽️ 점메추</div>
 
       <nav className="nav">
-        {menus.map((menu) => (
+        {navItems.map((item) => (
           <Link
-            key={menu.href}
-            href={menu.href}
-            className={`nav-item nav-link ${pathname === menu.href ? "active" : ""}`}
+            key={item.href}
+            href={item.href}
+            className={`nav-item nav-link ${pathname === item.href ? "active" : ""}`}
           >
-            {menu.label}
+            {item.label}
           </Link>
         ))}
       </nav>
