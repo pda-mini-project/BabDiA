@@ -24,6 +24,27 @@ body {
   min-height: 100vh;
 }
 
+.main-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  min-height: 0;
+}
+
+.main > * {
+  width: 100%;
+  max-width: 800px;
+}
+
 .desktop-nav {
   background: var(--sidebar);
   color: #fff;
@@ -110,10 +131,6 @@ body {
   line-height: 1.4;
 }
 
-.main {
-  padding: 48px;
-}
-
 .breadcrumb {
   font-size: 13px;
   color: var(--muted);
@@ -144,9 +161,5 @@ body {
     position: sticky;
     top: 0;
     z-index: 20;
-  }
-
-  .main {
-    padding: 24px;
   }
 }
