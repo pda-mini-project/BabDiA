@@ -15,14 +15,14 @@ export const PRICE_RANGES = [
   { value: "12,000원 이상", label: "12,000원 이상" },
 ] as const;
 
-/** 사진 속 태그: 국물, 밥, 면, 혼밥가능, 웨이팅X, 매울, 횡단보도X */
+/** 사진 속 태그: 국물, 밥, 면, 혼밥가능, 웨이팅X, 매움, 횡단보도X */
 export const ADD_RESTAURANT_TAGS = [
   "국물",
   "밥",
   "면",
   "혼밥가능",
   "웨이팅X",
-  "매울",
+  "매움",
   "횡단보도X",
 ] as const;
 

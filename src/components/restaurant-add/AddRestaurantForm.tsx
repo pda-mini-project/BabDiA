@@ -29,16 +29,47 @@ export default function AddRestaurantForm() {
     });
   }, []);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const handleReset = useCallback(() => {
     setForm(getInitialFormState());
+    setSubmitError(null);
   }, []);
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
-      // TODO: API 연동
-      console.log("식당 추가 제출:", form);
-      alert("저장 로직 연결하세요");
+      setSubmitError(null);
+      setIsSubmitting(true);
+      try {
+        const res = await fetch("/api/restaurants", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: form.name,
+            category: form.category,
+            priceRange: form.priceRange,
+            walkMinutes: form.walkMinutes,
+            naverLink: form.naverLink,
+            selectedTags: Array.from(form.selectedTags),
+            recommendMenu: form.recommendMenu,
+            locationText: form.locationText,
+            memo: form.memo,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setSubmitError(data.error ?? "등록에 실패했습니다.");
+          return;
+        }
+        setForm(getInitialFormState());
+        alert(data.message ?? "식당이 등록되었습니다.");
+      } catch {
+        setSubmitError("네트워크 오류가 발생했습니다.");
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     [form],
   );
@@ -184,19 +215,27 @@ export default function AddRestaurantForm() {
           />
         </div>
 
+        {submitError && (
+          <p className={styles.error} role="alert">
+            {submitError}
+          </p>
+        )}
+
         <div className={styles.actions}>
           <button
             type="button"
             className={`${styles.btn} ${styles.btnGhost}`}
             onClick={handleReset}
+            disabled={isSubmitting}
           >
             초기화
           </button>
           <button
             type="submit"
             className={`${styles.btn} ${styles.btnPrimary}`}
+            disabled={isSubmitting}
           >
-            저장하기
+            {isSubmitting ? "저장 중..." : "저장하기"}
           </button>
         </div>
       </form>
