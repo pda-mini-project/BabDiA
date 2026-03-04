@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 // 테스트용: 리셋 시간 설정 (시, 분)
@@ -45,20 +46,7 @@ export default function HeroSection() {
   // SSR/CSR 초기 렌더를 동일하게 맞춰 hydration mismatch 방지
   const [left, setLeft] = useState(0);
   const firedRef = useRef(false);
-
-  const handleSpinClick = () => {
-    const restaurants = [
-      "김치찌개집",
-      "순대국집",
-      "제육덮밥집",
-      "라멘집",
-      "샐러드집",
-      "돈까스집",
-    ];
-    const randomIdx = Math.floor(Math.random() * restaurants.length);
-    // TODO: 추후 추천 결과 표시 구현
-    console.log("추천:", restaurants[randomIdx]);
-  };
+  const router = useRouter();
 
   useEffect(() => {
     const updateLeft = () => {
@@ -155,7 +143,9 @@ export default function HeroSection() {
           <button
             className="main-cta"
             type="button"
-            onClick={handleSpinClick}
+            onClick={() => {
+              router.push("/recommend");
+            }}
             style={{
               marginTop: 10,
               width: "min(520px, 100%)",

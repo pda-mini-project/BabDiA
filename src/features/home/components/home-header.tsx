@@ -1,4 +1,9 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export default function HomeHeader() {
+  const router = useRouter();
   return (
     <header
       className="header"
@@ -36,7 +41,14 @@ export default function HomeHeader() {
           <span className="icon" style={{ fontSize: 18 }}>
             👤
           </span>
-          <span className="login-text">로그인 / 회원가입</span>
+          <span
+            onClick={() => {
+              router.push("/login");
+            }}
+            className="login-text"
+          >
+            로그인 / 회원가입
+          </span>
         </button>
       </div>
     </header>
