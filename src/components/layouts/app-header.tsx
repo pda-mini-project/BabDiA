@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MobileNav from "./partials/nav/mobile-nav";
 
 export default function AppHeader() {
   const [open, setOpen] = useState(false);
+
+  // close mobile nav when resizing to wide screens
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 1100 && open) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [open]);
 
   return (
     <>
