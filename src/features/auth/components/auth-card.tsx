@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import LoginForm from "./login-form";
 import SignupForm from "./signup-form";
 
@@ -10,7 +10,8 @@ interface AuthCardProps {
 }
 
 export default function AuthCard({ defaultTab = "login" }: AuthCardProps) {
-  const [tab, setTab] = useState<Tab>(defaultTab);
+  const router = useRouter();
+  const tab = defaultTab;
 
   return (
     <div className="w-full max-w-[520px] bg-white rounded-[18px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-[#E5E7EB]">
@@ -29,7 +30,7 @@ export default function AuthCard({ defaultTab = "login" }: AuthCardProps) {
         <div className="inline-flex p-1.5 rounded-full bg-[#F8FAFC] border border-[#E5E7EB] gap-1.5">
           <button
             type="button"
-            onClick={() => setTab("login")}
+            onClick={() => router.push("/login")}
             className={`px-3 py-2.5 rounded-full font-black text-[13px] cursor-pointer ${
               tab === "login"
                 ? "bg-white text-[#111827] shadow-[0_6px_16px_rgba(0,0,0,0.06)]"
@@ -40,7 +41,7 @@ export default function AuthCard({ defaultTab = "login" }: AuthCardProps) {
           </button>
           <button
             type="button"
-            onClick={() => setTab("signup")}
+            onClick={() => router.push("/signup")}
             className={`px-3 py-2.5 rounded-full font-black text-[13px] cursor-pointer ${
               tab === "signup"
                 ? "bg-white text-[#111827] shadow-[0_6px_16px_rgba(0,0,0,0.06)]"
