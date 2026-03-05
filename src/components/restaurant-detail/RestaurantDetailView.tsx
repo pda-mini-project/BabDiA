@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { RestaurantDetailRecord } from "@/data/restaurant-details";
 import styles from "./RestaurantDetail.module.css";
 
@@ -28,6 +28,10 @@ export default function RestaurantDetailView({
 }: RestaurantDetailViewProps) {
   const [formState, setFormState] = useState(blankForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [placeImageUrl, setPlaceImageUrl] = useState<string | null>(
+    restaurant.imageUrl,
+  );
 
   const handleChange = useCallback(
     <K extends keyof typeof blankForm>(key: K, value: string) => {
@@ -35,6 +39,42 @@ export default function RestaurantDetailView({
     },
     [],
   );
+
+  useEffect(() => {
+    if (!restaurant.naverLink) {
+      return;
+    }
+
+    let active = true;
+    const controller = new AbortController();
+
+    fetch(
+      `/api/restaurant-image?url=${encodeURIComponent(restaurant.naverLink)}`,
+      {
+        signal: controller.signal,
+      },
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data?.imageUrl) {
+          setPlaceImageUrl(data.imageUrl);
+        }
+      })
+      .catch((error) => {
+        const { name } = error as { name?: string };
+        if (name === "AbortError") return;
+        console.error("Failed to load hero image", error);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [restaurant.naverLink]);
+
+  const heroImageStyle = placeImageUrl
+    ? { backgroundImage: `url(${placeImageUrl})` }
+    : undefined;
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -63,7 +103,7 @@ export default function RestaurantDetailView({
         }
 
         setFormState({ rating: "", menu: "", comment: "" });
-        alert("후기가 등록되었습니다!");
+        alert("후기가 등록되었습니다.");
         window.location.reload();
       } catch (error) {
         console.error(error);
@@ -84,20 +124,32 @@ export default function RestaurantDetailView({
         <div className={styles.leftColumn}>
           <section className={styles.card}>
             <div className={styles.restaurantHero}>
-              <div className={styles.heroImg} aria-hidden />
+              <div
+                className={styles.heroImg}
+                style={heroImageStyle}
+                aria-label={`${restaurant.name} hero image`}
+              />
               <div className={styles.heroContent}>
                 <div className={styles.heroTitle}>
                   <div>
                     <h2 className={styles.name}>{restaurant.name}</h2>
-                    <p className={styles.sub}>{restaurant.tagline}</p>
                   </div>
                   <div className={styles.ratingPill}>
-                    <strong>⭐ {restaurant.rating.toFixed(1)}</strong>
+                    <strong>★{restaurant.rating.toFixed(1)}</strong>
                     <span className={styles.muted}>
                       후기 {restaurant.reviewCount}개
                     </span>
                   </div>
                 </div>
+                {restaurant.tags.length > 0 && (
+                  <div className={styles.tagList}>
+                    {restaurant.tags.map((tag) => (
+                      <span key={tag} className={styles.tag}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className={styles.btnRow}>
                   <a
                     className={`${styles.btn} ${styles.btnSoft}`}
@@ -115,31 +167,42 @@ export default function RestaurantDetailView({
           <section className={`${styles.card} ${styles.reviewSection}`}>
             <div className={styles.reviewHeader}>
               <div>
-                <h3>프디아 후기</h3>
-                <p className={styles.sub}>
-                  후기/별점은 실제 데이터 연결 시 렌더링됩니다.
-                </p>
+                <h3>밥디아 후기</h3>
               </div>
             </div>
 
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
                 <div>
-                  <p className={styles.label}>별점</p>
-                  <input
-                    className={styles.input}
-                    placeholder="예: 5"
-                    value={formState.rating}
-                    onChange={(event) =>
-                      handleChange("rating", event.target.value)
-                    }
-                  />
+                  <p className={styles.label}>평점</p>
+                  <div className={styles.starPicker}>
+                    {Array.from({ length: 5 }, (_, index) => {
+                      const value = index + 1;
+                      const active =
+                        value <= (hoverRating || Number(formState.rating) || 0);
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          className={`${styles.starButton} ${
+                            active ? styles.starActive : ""
+                          }`}
+                          onMouseEnter={() => setHoverRating(value)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          onClick={() => handleChange("rating", String(value))}
+                          aria-label={`별점 ${value}`}
+                        >
+                          ★
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div>
+                <div className={styles.menuBox}>
                   <p className={styles.label}>메뉴명</p>
                   <input
                     className={styles.input}
-                    placeholder="예: 김치찌개"
+                    placeholder="먹은 메뉴"
                     value={formState.menu}
                     onChange={(event) =>
                       handleChange("menu", event.target.value)
@@ -154,7 +217,7 @@ export default function RestaurantDetailView({
                 <p className={styles.label}>후기 내용</p>
                 <textarea
                   className={styles.textarea}
-                  placeholder="후기 내용을 입력하세요"
+                  placeholder="솔직한 후기를 남겨주세요."
                   value={formState.comment}
                   onChange={(event) =>
                     handleChange("comment", event.target.value)
@@ -176,15 +239,20 @@ export default function RestaurantDetailView({
             <div className={styles.reviewList}>
               {restaurant.reviews.map((review) => (
                 <div key={review.id} className={styles.reviewItem}>
-                  <div className={styles.reviewTop}>
-                    <strong>
-                      {review.nickname} · 메뉴: {review.menu}
-                    </strong>
+                  <div className={styles.reviewRow}>
+                    <p className={styles.reviewComment}>{review.comment}</p>
                     <span className={styles.stars}>
                       {renderStars(review.rating)}
                     </span>
                   </div>
-                  <p className={styles.reviewText}>{review.comment}</p>
+                  {review.menu && (
+                    <p className={styles.reviewMenuDetail}>
+                      메뉴: {review.menu}
+                    </p>
+                  )}
+                  <span className={styles.reviewNickname}>
+                    {review.nickname}
+                  </span>
                 </div>
               ))}
             </div>
@@ -193,13 +261,12 @@ export default function RestaurantDetailView({
 
         <aside className={styles.infoColumn}>
           <section className={styles.card}>
-            <div className={styles.infoHeadline}>간단한 정보</div>
+            <div className={styles.infoHeadline}>가게 정보</div>
             <div className={styles.infoStack}>
               {restaurant.infoBlocks.map((block) => (
                 <div key={block.label} className={styles.infoBox}>
                   <div className={styles.label}>{block.label}</div>
                   <div className={styles.value}>{block.value}</div>
-                  <div className={styles.desc}>{block.detail}</div>
                 </div>
               ))}
             </div>

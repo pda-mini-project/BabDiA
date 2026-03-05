@@ -15,9 +15,13 @@ export default function ResultCard({ restaurant, cardKey }: ResultCardProps) {
 
   useEffect(() => {
     if (restaurant.imageUrl || !restaurant.naverMapUrl) return;
-    fetch(`/api/restaurant-image?url=${encodeURIComponent(restaurant.naverMapUrl)}`)
+    fetch(
+      `/api/restaurant-image?url=${encodeURIComponent(restaurant.naverMapUrl)}`,
+    )
       .then((r) => r.json())
-      .then((d) => { if (d?.imageUrl) setFetchedUrl(d.imageUrl); })
+      .then((d) => {
+        if (d?.imageUrl) setFetchedUrl(d.imageUrl);
+      })
       .catch(() => {});
   }, [restaurant.id, restaurant.naverMapUrl, restaurant.imageUrl]);
 
@@ -25,7 +29,11 @@ export default function ResultCard({ restaurant, cardKey }: ResultCardProps) {
     <div className={styles.resultCard} key={cardKey}>
       <div className={styles.resultImg}>
         {imageUrl ? (
-          <img src={imageUrl} alt={restaurant.name} className={styles.resultImgPhoto} />
+          <img
+            src={imageUrl}
+            alt={restaurant.name}
+            className={styles.resultImgPhoto}
+          />
         ) : (
           <span>{restaurant.emoji}</span>
         )}
