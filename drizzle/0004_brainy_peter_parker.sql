@@ -1,0 +1,1 @@
+ALTER TABLE "babdia"."reviews" ADD COLUMN "menu" varchar(255);

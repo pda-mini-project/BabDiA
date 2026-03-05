@@ -12,26 +12,67 @@ const blankForm = {
 
 function renderStars(count: number) {
   const max = 5;
-  return Array.from({ length: max }, (_, index) => (index < count ? "★" : "☆")).join("");
+  return Array.from({ length: max }, (_, index) =>
+    index < count ? "★" : "☆",
+  ).join("");
 }
 
 type RestaurantDetailViewProps = {
   restaurant: RestaurantDetailRecord;
+  restaurantId?: string;
 };
 
-export default function RestaurantDetailView({ restaurant }: RestaurantDetailViewProps) {
+export default function RestaurantDetailView({
+  restaurant,
+  restaurantId,
+}: RestaurantDetailViewProps) {
   const [formState, setFormState] = useState(blankForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = useCallback(<K extends keyof typeof blankForm>(key: K, value: string) => {
-    setFormState((prev) => ({ ...prev, [key]: value }));
-  }, []);
-
-  const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      setFormState({ rating: "", menu: "", comment: "" });
+  const handleChange = useCallback(
+    <K extends keyof typeof blankForm>(key: K, value: string) => {
+      setFormState((prev) => ({ ...prev, [key]: value }));
     },
     [],
+  );
+
+  const handleSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      if (!restaurantId || !formState.rating || !formState.comment) {
+        alert("필수 항목을 입력해주세요.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const response = await fetch("/api/reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            restaurantId,
+            rating: parseInt(formState.rating),
+            menu: formState.menu,
+            content: formState.comment,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit review");
+        }
+
+        setFormState({ rating: "", menu: "", comment: "" });
+        alert("후기가 등록되었습니다!");
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+        alert("후기 등록에 실패했습니다.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [restaurantId, formState.rating, formState.comment, formState.menu],
   );
 
   return (
@@ -52,7 +93,9 @@ export default function RestaurantDetailView({ restaurant }: RestaurantDetailVie
                   </div>
                   <div className={styles.ratingPill}>
                     <strong>⭐ {restaurant.rating.toFixed(1)}</strong>
-                    <span className={styles.muted}>후기 {restaurant.reviewCount}개</span>
+                    <span className={styles.muted}>
+                      후기 {restaurant.reviewCount}개
+                    </span>
                   </div>
                 </div>
                 <div className={styles.btnRow}>
@@ -73,7 +116,9 @@ export default function RestaurantDetailView({ restaurant }: RestaurantDetailVie
             <div className={styles.reviewHeader}>
               <div>
                 <h3>프디아 후기</h3>
-                <p className={styles.sub}>후기/별점은 실제 데이터 연결 시 렌더링됩니다.</p>
+                <p className={styles.sub}>
+                  후기/별점은 실제 데이터 연결 시 렌더링됩니다.
+                </p>
               </div>
             </div>
 
@@ -85,7 +130,9 @@ export default function RestaurantDetailView({ restaurant }: RestaurantDetailVie
                     className={styles.input}
                     placeholder="예: 5"
                     value={formState.rating}
-                    onChange={(event) => handleChange("rating", event.target.value)}
+                    onChange={(event) =>
+                      handleChange("rating", event.target.value)
+                    }
                   />
                 </div>
                 <div>
@@ -94,7 +141,9 @@ export default function RestaurantDetailView({ restaurant }: RestaurantDetailVie
                     className={styles.input}
                     placeholder="예: 김치찌개"
                     value={formState.menu}
-                    onChange={(event) => handleChange("menu", event.target.value)}
+                    onChange={(event) =>
+                      handleChange("menu", event.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -107,13 +156,19 @@ export default function RestaurantDetailView({ restaurant }: RestaurantDetailVie
                   className={styles.textarea}
                   placeholder="후기 내용을 입력하세요"
                   value={formState.comment}
-                  onChange={(event) => handleChange("comment", event.target.value)}
+                  onChange={(event) =>
+                    handleChange("comment", event.target.value)
+                  }
                 />
               </div>
 
               <div className={styles.formActions}>
-                <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
-                  등록
+                <button
+                  type="submit"
+                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "등록 중..." : "등록"}
                 </button>
               </div>
             </form>
@@ -125,7 +180,9 @@ export default function RestaurantDetailView({ restaurant }: RestaurantDetailVie
                     <strong>
                       {review.nickname} · 메뉴: {review.menu}
                     </strong>
-                    <span className={styles.stars}>{renderStars(review.rating)}</span>
+                    <span className={styles.stars}>
+                      {renderStars(review.rating)}
+                    </span>
                   </div>
                   <p className={styles.reviewText}>{review.comment}</p>
                 </div>

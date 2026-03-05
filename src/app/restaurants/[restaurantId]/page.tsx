@@ -14,7 +14,10 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
 
   return (
     <AppShell>
-      <RestaurantDetailView restaurant={restaurant} />
+      <RestaurantDetailView
+        restaurant={restaurant}
+        restaurantId={restaurant.id}
+      />
     </AppShell>
   );
 }

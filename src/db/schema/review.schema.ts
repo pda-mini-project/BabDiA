@@ -23,6 +23,7 @@ export const reviews = babdiaSchema.table(
       .references(() => user.id, { onDelete: "cascade" }),
     uuid: varchar("uuid", { length: 36 }).notNull().unique(),
     rating: integer("rating").notNull(),
+    menu: varchar("menu", { length: 255 }),
     content: text("content"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
