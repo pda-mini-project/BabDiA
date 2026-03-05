@@ -36,7 +36,6 @@ export type AddRestaurantFormState = {
   selectedTags: Set<string>;
   recommendMenu: string;
   locationText: string;
-  memo: string;
 };
 
 export function getInitialFormState(): AddRestaurantFormState {
@@ -49,7 +48,6 @@ export function getInitialFormState(): AddRestaurantFormState {
     selectedTags: new Set(),
     recommendMenu: "",
     locationText: "",
-    memo: "",
   };
 }
 

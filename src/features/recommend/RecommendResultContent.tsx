@@ -1,17 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import AppShell from "@/components/layouts/app-shell";
 import ResultCard from "@/components/recommend-result/ResultCard";
 import ResultActions from "@/components/recommend-result/ResultActions";
-import ResultInfoCard from "@/components/recommend-result/ResultInfoCard";
+import DetailModal from "@/components/recommend-result/DetailModal";
 import SlotOverlay from "@/components/recommend-result/SlotOverlay";
-import {
-  SAMPLE_RESTAURANTS,
-  pickRecommendation,
-  pickRecommendationExcluding,
-} from "@/lib/result";
+import { pickRecommendation, pickRecommendationExcluding } from "@/lib/result";
 import type { Restaurant } from "@/type/result";
 import styles from "@/components/recommend-result/result.module.css";
 
@@ -26,12 +23,12 @@ export default function RecommendResultContent() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<Restaurant | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailRestaurantId, setDetailRestaurantId] = useState<string | null>(null);
   const [isRerolling, setIsRerolling] = useState(false);
   const [slotEmojiIndex, setSlotEmojiIndex] = useState(0);
   const [cardKey, setCardKey] = useState(0);
 
-  const list = restaurants.length > 0 ? restaurants : SAMPLE_RESTAURANTS;
+  const list = restaurants;
 
   useEffect(() => {
     const query = new URLSearchParams();
@@ -43,8 +40,12 @@ export default function RecommendResultContent() {
       .then((data) => {
         const arr = Array.isArray(data.restaurants) ? data.restaurants : [];
         setRestaurants(arr);
+        if (arr.length === 0) setCurrent(null);
       })
-      .catch(() => setRestaurants([]))
+      .catch(() => {
+        setRestaurants([]);
+        setCurrent(null);
+      })
       .finally(() => setLoading(false));
   }, [tagParams.join(","), preset]);
 
@@ -69,7 +70,6 @@ export default function RecommendResultContent() {
   }, [isRerolling]);
 
   const handleReroll = useCallback(() => {
-    setDetailOpen(false);
     setIsRerolling(true);
     setTimeout(() => {
       setCurrent((prev) =>
@@ -96,8 +96,9 @@ export default function RecommendResultContent() {
   }, [current]);
 
   const handleDetail = useCallback(() => {
-    setDetailOpen((prev) => !prev);
-  }, []);
+    if (!current) return;
+    setDetailRestaurantId(current.id);
+  }, [current]);
 
   if (loading) {
     return (
@@ -119,7 +120,15 @@ export default function RecommendResultContent() {
         <div className={styles.wrap}>
           <div className={styles.main}>
             <div className={styles.content} style={{ padding: 48, textAlign: "center" }}>
-              조건에 맞는 식당이 없어요. 태그를 바꿔 보거나 식당을 추가해 주세요.
+              <p style={{ marginBottom: 24 }}>
+                조건에 맞는 식당이 없어요. 태그를 바꿔 보거나 식당을 추가해 주세요.
+              </p>
+              <Link
+                href="/recommend"
+                className={styles.emptyStateBtn}
+              >
+                점메추 페이지로 돌아가기
+              </Link>
             </div>
           </div>
         </div>
@@ -148,11 +157,14 @@ export default function RecommendResultContent() {
               onNaverMap={handleNaverMap}
               onDetail={handleDetail}
             />
-            <ResultInfoCard restaurant={current} isOpen={detailOpen} />
           </div>
         </div>
       </div>
 
+      <DetailModal
+        restaurantId={detailRestaurantId}
+        onClose={() => setDetailRestaurantId(null)}
+      />
       <SlotOverlay show={isRerolling} emojiIndex={slotEmojiIndex} />
     </AppShell>
   );
