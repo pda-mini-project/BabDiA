@@ -1,6 +1,36 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/auth-client";
+
 export default function SignupForm() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+
+    if (password !== passwordConfirm) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    const { error } = await authClient.signUp.email({ name, email, password });
+    if (error) {
+      setError(error.message ?? "회원가입에 실패했습니다.");
+      return;
+    }
+    router.push("/");
+  }
+
   return (
-    <form className="grid gap-3" onSubmit={(e) => e.preventDefault()}>
+    <form className="grid gap-3" onSubmit={handleSubmit}>
       {" "}
       <div className="grid gap-2">
         <div className="flex items-center justify-between">
@@ -14,6 +44,8 @@ export default function SignupForm() {
           name="nickname"
           autoComplete="nickname"
           placeholder="예: 프디아김"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="w-full px-3.5 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[14px] outline-none focus:border-[rgba(79,70,229,0.45)]
   focus:shadow-[0_0_0_6px_rgba(79,70,229,0.10)]"
         />
@@ -33,6 +65,8 @@ export default function SignupForm() {
           type="email"
           autoComplete="email"
           placeholder="이메일 입력"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full px-3.5 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[14px] outline-none focus:border-[rgba(79,70,229,0.45)]
   focus:shadow-[0_0_0_6px_rgba(79,70,229,0.10)]"
         />
@@ -50,6 +84,8 @@ export default function SignupForm() {
           type="password"
           autoComplete="new-password"
           placeholder="비밀번호 입력"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full px-3.5 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[14px] outline-none focus:border-[rgba(79,70,229,0.45)]
   focus:shadow-[0_0_0_6px_rgba(79,70,229,0.10)]"
         />
@@ -67,10 +103,17 @@ export default function SignupForm() {
           type="password"
           autoComplete="new-password"
           placeholder="비밀번호 확인"
+          value={passwordConfirm}
+          onChange={(e) => setPasswordConfirm(e.target.value)}
           className="w-full px-3.5 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[14px] outline-none focus:border-[rgba(79,70,229,0.45)]
   focus:shadow-[0_0_0_6px_rgba(79,70,229,0.10)]"
         />
       </div>
+
+      {error && (
+        <p className="text-[13px] text-red-500">{error}</p>
+      )}
+
       <button
         type="submit"
         className="w-full py-3.5 px-4 rounded-[14px] border-0 cursor-pointer font-black text-[14px] bg-[#4F46E5] text-white
