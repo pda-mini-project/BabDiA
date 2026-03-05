@@ -7,7 +7,7 @@ export const PRESET_MAP: Record<PresetKey, string[]> = {
   cold: ["국물 있는", "매운", "밥", "한식"],
   hot: ["국물 없는", "면", "도보 5분", "10,000원 이하"],
   tired: ["도보 5분", "가능", "없을 선호", "10,000원 이하"],
-  happy: ["상관없음", "있어도 됨", "양식"],
+  happy: ["거리_상관없음", "가격_상관없음", "있어도 됨", "양식"],
   stressed: ["매운", "국물 있는", "밥"],
   social: ["한식", "중식", "있어도 됨", "불가"],
 };
@@ -24,9 +24,13 @@ export const PRESETS: PresetItem[] = [
   { key: "social", icon: "👥", label: "단체" },
 ];
 
-/** 사진 속 세부 조건 그대로 */
+/** 사진 속 세부 조건 그대로. 거리/가격/횡단보도 '상관없음'은 그룹별로 독립 */
 export const FILTERS: FilterGroup[] = [
-  { label: "📍 거리", tags: ["도보 5분", "도보 10분", "상관없음"] },
+  {
+    label: "📍 거리",
+    tags: ["도보 5분", "도보 10분", "거리_상관없음"],
+    singleChoice: true,
+  },
   { label: "🍲 국물", tags: ["국물 있는", "국물 없는"] },
   { label: "🍚 밥/면", tags: ["밥", "면"] },
   {
@@ -35,9 +39,10 @@ export const FILTERS: FilterGroup[] = [
   },
   {
     label: "💰 가격",
-    tags: ["10,000원 이하", "13,000원 이하", "상관없음"],
+    tags: ["10,000원 이하", "13,000원 이하", "가격_상관없음"],
+    singleChoice: true,
   },
-  { label: "🚶‍♀️ 횡단보도", tags: ["없어야 함", "상관없음"] },
+  { label: "🚶‍♀️ 횡단보도", tags: ["없어야 함", "횡단보도_상관없음"] },
   { label: "🌶️ 맵기", tags: ["매운", "안 매운"] },
   { label: "🧑‍🤝‍🧑 혼밥", tags: ["가능", "불가"] },
   { label: "⌛ 웨이팅", tags: ["없을 선호", "있어도 됨"] },
