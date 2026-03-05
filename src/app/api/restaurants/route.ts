@@ -43,11 +43,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // 식당 이름(trim 기준) 중복 방지
+    // 식당 이름 중복 방지: 앞뒤 공백 제거 + 중간 공백 제거 후 비교 (예: "롯데 리아" ↔ "롯데리아")
+    const normalizedName = trimmedName.replace(/\s+/g, "");
     const existing = await db
       .select({ id: restaurants.id })
       .from(restaurants)
-      .where(sql`trim(${restaurants.name}) = ${trimmedName}`)
+      .where(
+        sql`regexp_replace(trim(${restaurants.name}), '\s+', '', 'g') = ${normalizedName}`,
+      )
       .limit(1)
       .then((rows) => rows[0]);
 
