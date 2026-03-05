@@ -26,9 +26,14 @@ export default function RecommendContent() {
     setSelectedTags(new Set(PRESET_MAP[activePreset]));
   }, [activePreset]);
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tag: string, exclusiveGroup?: string[]) => {
     setSelectedTags((prev) => {
       const next = new Set(prev);
+      if (exclusiveGroup) {
+        exclusiveGroup.forEach((t) => next.delete(t));
+        if (!prev.has(tag)) next.add(tag);
+        return next;
+      }
       next.has(tag) ? next.delete(tag) : next.add(tag);
       return next;
     });
@@ -46,7 +51,7 @@ export default function RecommendContent() {
   return (
     <AppShell>
       <div className="breadcrumb"></div>
-      <h1 className="page-title">점메추</h1>
+      <h1 className="page-title" style={{ marginBottom: 24 }}>점메추</h1>
 
       <PresetSection
         presets={PRESETS}

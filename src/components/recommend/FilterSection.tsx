@@ -6,9 +6,14 @@ import styles from "./recommend.module.css";
 type FilterSectionProps = {
   filters: FilterGroup[];
   selectedTags: Set<string>;
-  onToggleTag: (tag: string) => void;
+  /** exclusiveGroup 있으면 해당 그룹 태그 전부 제거 후 이 태그만 토글 (단일 선택) */
+  onToggleTag: (tag: string, exclusiveGroup?: string[]) => void;
   onStart: () => void;
 };
+
+function getTagLabel(tag: string): string {
+  return tag.includes("_상관없음") ? "상관없음" : tag;
+}
 
 export default function FilterSection({
   filters,
@@ -32,9 +37,11 @@ export default function FilterSection({
                 styles.tag,
                 selectedTags.has(tag) ? styles.tagActive : "",
               ].join(" ")}
-              onClick={() => onToggleTag(tag)}
+              onClick={() =>
+                onToggleTag(tag, row.singleChoice ? row.tags : undefined)
+              }
             >
-              {tag}
+              {getTagLabel(tag)}
             </button>
           ))}
         </div>

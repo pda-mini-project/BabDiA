@@ -18,4 +18,6 @@ export type PresetItem = {
 export type FilterGroup = {
   label: string;
   tags: string[];
+  /** true면 해당 그룹에서 하나만 선택 가능 (거리, 가격) */
+  singleChoice?: boolean;
 };
