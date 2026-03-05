@@ -56,6 +56,11 @@
   background: #eef2ff;
 }
 
+.presetChipActive:hover {
+  border-color: var(--primary);
+  background: #e0e7ff;
+}
+
 .icon {
   font-size: 20px;
   line-height: 1;
@@ -109,7 +114,14 @@
   border-color: var(--primary);
 }
 
-/* 버튼 */
+/* 선택된 태그 호버: 글씨 유지 (홈 filterTagActive:hover와 동일) */
+.tagActive:hover {
+  background: #4338ca;
+  color: #fff;
+  border-color: #4338ca;
+}
+
+/* 버튼 (홈처럼 호버 시 배경만 살짝 진하게, opacity 없음) */
 .start {
   width: 100%;
   padding: 18px;
@@ -121,11 +133,11 @@
   font-weight: 900;
   cursor: pointer;
   margin-top: 8px;
-  transition: opacity 0.15s;
+  transition: background 0.15s;
 }
 
 .start:hover {
-  opacity: 0.88;
+  background: #4338ca;
 }
 
 /* 프리셋 안내 */
