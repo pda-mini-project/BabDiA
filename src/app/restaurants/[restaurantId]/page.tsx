@@ -1,23 +1,17 @@
-import AppShell from "@/components/layouts/app-shell";
-import RestaurantDetailView from "@/components/restaurant-detail/RestaurantDetailView";
 import { getRestaurantDetail } from "@/data/restaurant-details";
+import { redirect } from "next/navigation";
 
-type RestaurantPageProps = {
+type RestaurantRedirectPageProps = {
   params: Promise<{
     restaurantId: string;
   }>;
 };
 
-export default async function RestaurantPage({ params }: RestaurantPageProps) {
+export default async function RestaurantRedirectPage({
+  params,
+}: RestaurantRedirectPageProps) {
   const { restaurantId } = await params;
-  const restaurant = getRestaurantDetail(restaurantId);
+  const restaurant = await getRestaurantDetail(restaurantId);
 
-  return (
-    <AppShell>
-      <RestaurantDetailView
-        restaurant={restaurant}
-        restaurantId={restaurant.id}
-      />
-    </AppShell>
-  );
+  redirect(`/restaurants/detail/${restaurant.id}`);
 }
