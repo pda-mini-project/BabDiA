@@ -484,6 +484,7 @@ export default function RestaurantSection({
           <div
             key={restaurant.id}
             className="restaurant-card"
+            onClick={() => router.push(`/restaurants/detail/${restaurant.id}`)}
             style={{
               borderRadius: 20,
               overflow: "hidden",
