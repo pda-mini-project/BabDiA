@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   restaurants,
@@ -35,10 +35,26 @@ export async function POST(request: Request) {
       locationText,
     } = body;
 
-    if (!name?.trim()) {
+    const trimmedName = name?.trim() ?? "";
+    if (!trimmedName) {
       return NextResponse.json(
         { error: "식당 이름은 필수입니다." },
         { status: 400 },
+      );
+    }
+
+    // 식당 이름(trim 기준) 중복 방지
+    const existing = await db
+      .select({ id: restaurants.id })
+      .from(restaurants)
+      .where(sql`trim(${restaurants.name}) = ${trimmedName}`)
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "이미 같은 이름의 식당이 등록되어 있습니다.", existingId: existing.id },
+        { status: 409 },
       );
     }
 
@@ -54,7 +70,7 @@ export async function POST(request: Request) {
     const [inserted] = await db
       .insert(restaurants)
       .values({
-        name: name.trim(),
+        name: trimmedName,
         category: category?.trim() || null,
         naverLink: naverLink?.trim() || null,
         recommendMenu: recommendMenu?.trim() || null,
