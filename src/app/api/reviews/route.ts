@@ -1,6 +1,8 @@
 import { reviews } from "@/db/schema/review.schema";
+import { restaurants } from "@/db/schema/restaurant.schema";
 import { db } from "@/db/client";
 import { auth } from "@/lib/auth";
+import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,13 +25,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await db.insert(reviews).values({
-      restaurantId: parseInt(restaurantId),
-      userId: session.user.id,
-      uuid: randomUUID(),
-      rating: parseInt(rating),
-      menu: menu || null,
-      content,
+    const restaurantIdNumber = Number(restaurantId);
+    const ratingNumber = Number(rating);
+
+    if (!Number.isInteger(restaurantIdNumber) || !Number.isInteger(ratingNumber)) {
+      return NextResponse.json({ error: "Invalid field types" }, { status: 400 });
+    }
+
+    const result = await db.transaction(async (tx) => {
+      const inserted = await tx.insert(reviews).values({
+        restaurantId: restaurantIdNumber,
+        userId: session.user.id,
+        uuid: randomUUID(),
+        rating: ratingNumber,
+        menu: menu || null,
+        content,
+      });
+
+      const [averageRow] = await tx
+        .select({
+          averageRating: sql<string | null>`round(avg(${reviews.rating})::numeric, 1)`,
+        })
+        .from(reviews)
+        .where(eq(reviews.restaurantId, restaurantIdNumber));
+
+      await tx
+        .update(restaurants)
+        .set({
+          rating: averageRow?.averageRating ?? "0.0",
+        })
+        .where(eq(restaurants.id, restaurantIdNumber));
+
+      return inserted;
     });
 
     return NextResponse.json({ success: true, result });
