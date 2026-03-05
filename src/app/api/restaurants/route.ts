@@ -7,8 +7,7 @@ import {
   tags,
   restaurantTags,
 } from "@/db/schema";
-
-const DEFAULT_TAG_CATEGORY_CODE = "default";
+import { getCategoryCodeForTagName } from "@/lib/tag-categories";
 
 export type CreateRestaurantBody = {
   name: string;
@@ -75,57 +74,53 @@ export async function POST(request: Request) {
     const restaurantId = inserted.id;
 
     if (selectedTags.length > 0) {
-      let categoryRow = await db
-        .select({ id: tagCategories.id })
-        .from(tagCategories)
-        .where(eq(tagCategories.code, DEFAULT_TAG_CATEGORY_CODE))
-        .limit(1)
-        .then((rows) => rows[0]);
+      for (const tagName of selectedTags) {
+        const trimmed = tagName?.trim();
+        if (!trimmed) continue;
 
-      if (!categoryRow) {
-        const [newCat] = await db
-          .insert(tagCategories)
-          .values({ name: "기본", code: DEFAULT_TAG_CATEGORY_CODE })
-          .returning({ id: tagCategories.id });
-        if (newCat) categoryRow = newCat;
-      }
+        const categoryCode = getCategoryCodeForTagName(trimmed);
+        if (!categoryCode) continue;
 
-      if (categoryRow) {
-        for (const tagName of selectedTags) {
-          if (!tagName?.trim()) continue;
+        const categoryRow = await db
+          .select({ id: tagCategories.id })
+          .from(tagCategories)
+          .where(eq(tagCategories.code, categoryCode))
+          .limit(1)
+          .then((rows) => rows[0]);
 
-          let tagRow = await db
-            .select({ id: tags.id })
-            .from(tags)
-            .where(
-              and(
-                eq(tags.name, tagName.trim()),
-                eq(tags.tagCategoryId, categoryRow.id),
-              ),
-            )
-            .limit(1)
-            .then((rows) => rows[0]);
+        if (!categoryRow) continue;
 
-          if (!tagRow) {
-            const [newTag] = await db
-              .insert(tags)
-              .values({
-                name: tagName.trim(),
-                tagCategoryId: categoryRow.id,
-              })
-              .returning({ id: tags.id });
-            if (newTag) tagRow = newTag;
-          }
+        let tagRow = await db
+          .select({ id: tags.id })
+          .from(tags)
+          .where(
+            and(
+              eq(tags.name, trimmed),
+              eq(tags.tagCategoryId, categoryRow.id),
+            ),
+          )
+          .limit(1)
+          .then((rows) => rows[0]);
 
-          if (tagRow) {
-            try {
-              await db.insert(restaurantTags).values({
-                restaurantId,
-                tagId: tagRow.id,
-              });
-            } catch {
-              // 이미 같은 (restaurantId, tagId) 조합이 있으면 무시
-            }
+        if (!tagRow) {
+          const [newTag] = await db
+            .insert(tags)
+            .values({
+              name: trimmed,
+              tagCategoryId: categoryRow.id,
+            })
+            .returning({ id: tags.id });
+          if (newTag) tagRow = newTag;
+        }
+
+        if (tagRow) {
+          try {
+            await db.insert(restaurantTags).values({
+              restaurantId,
+              tagId: tagRow.id,
+            });
+          } catch {
+            // 이미 같은 (restaurantId, tagId) 조합이 있으면 무시
           }
         }
       }

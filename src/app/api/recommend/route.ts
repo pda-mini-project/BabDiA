@@ -1,18 +1,11 @@
 import { NextResponse } from "next/server";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
-import {
-  restaurants,
-  tagCategories,
-  tags,
-  restaurantTags,
-} from "@/db/schema";
+import { restaurants, tags, restaurantTags } from "@/db/schema";
 import { parseRecommendTags } from "@/lib/recommend-mapping";
 import type { Restaurant } from "@/type/result";
 import { PRESET_MAP } from "@/lib/recommend";
 import type { PresetKey } from "@/type/recommend";
-
-const DEFAULT_TAG_CATEGORY_CODE = "default";
 
 function toResultRestaurant(
   row: {
@@ -64,13 +57,6 @@ export async function GET(request: Request) {
 
     const condition = parseRecommendTags(tagStrings);
 
-    const categoryRow = await db
-      .select({ id: tagCategories.id })
-      .from(tagCategories)
-      .where(eq(tagCategories.code, DEFAULT_TAG_CATEGORY_CODE))
-      .limit(1)
-      .then((rows) => rows[0]);
-
     const allRestaurants = await db
       .select({
         id: restaurants.id,
@@ -91,24 +77,15 @@ export async function GET(request: Request) {
     }
 
     const restaurantIds = allRestaurants.map((r) => r.id);
-    let tagRows: { restaurantId: number; tagName: string }[] = [];
-
-    if (categoryRow) {
-      const rows = await db
-        .select({
-          restaurantId: restaurantTags.restaurantId,
-          tagName: tags.name,
-        })
-        .from(restaurantTags)
-        .innerJoin(tags, eq(restaurantTags.tagId, tags.id))
-        .where(
-          and(
-            eq(tags.tagCategoryId, categoryRow.id),
-            inArray(restaurantTags.restaurantId, restaurantIds),
-          ),
-        );
-      tagRows = rows;
-    }
+    // 9개 카테고리로 나뉜 태그 전부 조회 (조건 필터 + 결과 표시용)
+    const tagRows = await db
+      .select({
+        restaurantId: restaurantTags.restaurantId,
+        tagName: tags.name,
+      })
+      .from(restaurantTags)
+      .innerJoin(tags, eq(restaurantTags.tagId, tags.id))
+      .where(inArray(restaurantTags.restaurantId, restaurantIds));
 
     const tagsByRestaurantId = new Map<number, string[]>();
     for (const r of tagRows) {
