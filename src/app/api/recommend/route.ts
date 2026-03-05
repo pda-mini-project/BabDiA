@@ -23,6 +23,7 @@ function toResultRestaurant(
     priceRange: string | null;
     walkingMinutes: number | null;
     naverLink: string | null;
+    imageUrl: string | null;
     rating: string | null;
   },
   tagNames: string[],
@@ -45,6 +46,7 @@ function toResultRestaurant(
     crosswalk: hasCrosswalkX ? "없음" : "있음",
     naverMapUrl: row.naverLink ?? undefined,
     mapQuery: row.name,
+    imageUrl: row.imageUrl ?? undefined,
   };
 }
 
@@ -79,6 +81,7 @@ export async function GET(request: Request) {
         priceRange: restaurants.priceRange,
         walkingMinutes: restaurants.walkingMinutes,
         naverLink: restaurants.naverLink,
+        imageUrl: restaurants.imageUrl,
         rating: restaurants.rating,
       })
       .from(restaurants);

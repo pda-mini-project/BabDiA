@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import type { Restaurant } from "@/type/result";
 import styles from "./result.module.css";
 
@@ -9,10 +10,25 @@ type ResultCardProps = {
 };
 
 export default function ResultCard({ restaurant, cardKey }: ResultCardProps) {
+  const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
+  const imageUrl = restaurant.imageUrl ?? fetchedUrl ?? null;
+
+  useEffect(() => {
+    if (restaurant.imageUrl || !restaurant.naverMapUrl) return;
+    fetch(`/api/restaurant-image?url=${encodeURIComponent(restaurant.naverMapUrl)}`)
+      .then((r) => r.json())
+      .then((d) => { if (d?.imageUrl) setFetchedUrl(d.imageUrl); })
+      .catch(() => {});
+  }, [restaurant.id, restaurant.naverMapUrl, restaurant.imageUrl]);
+
   return (
     <div className={styles.resultCard} key={cardKey}>
       <div className={styles.resultImg}>
-        <span>{restaurant.emoji}</span>
+        {imageUrl ? (
+          <img src={imageUrl} alt={restaurant.name} className={styles.resultImgPhoto} />
+        ) : (
+          <span>{restaurant.emoji}</span>
+        )}
         <div className={styles.resultBadge}>⭐ {restaurant.rating}</div>
       </div>
       <div className={styles.resultBody}>
