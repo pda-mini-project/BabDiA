@@ -8,13 +8,14 @@ export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
-    const { error } = await authClient.signIn.email({ email, password });
+    const { error } = await authClient.signIn.email({ email, password, rememberMe });
     if (error) {
       setError(error.message ?? "로그인에 실패했습니다.");
       return;
@@ -47,18 +48,9 @@ export default function LoginForm() {
       </div>
 
       <div className="grid gap-2">
-        <div className="flex items-center justify-between">
-          <label className="font-black text-[13px]" htmlFor="loginPw">
-            비밀번호
-          </label>
-          <a
-            href="#"
-            className="text-[13px] text-[#2f2aa8] font-extrabold no-underline hover:underline"
-            onClick={(e) => e.preventDefault()}
-          >
-            비밀번호 찾기
-          </a>
-        </div>
+        <label className="font-black text-[13px]" htmlFor="loginPw">
+          비밀번호
+        </label>
         <input
           id="loginPw"
           name="password"
@@ -74,7 +66,12 @@ export default function LoginForm() {
 
       <div className="flex items-center justify-between mt-0.5">
         <label className="inline-flex items-center gap-2 text-[13px] text-[#6B7280] cursor-pointer select-none">
-          <input type="checkbox" className="w-4 h-4" />
+          <input
+            type="checkbox"
+            className="w-4 h-4"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
           로그인 유지
         </label>
         <span className="text-[12px] text-[#6B7280]">공용 PC에서는 해제</span>
