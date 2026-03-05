@@ -12,6 +12,7 @@ import { babdiaSchema } from "./base-schema";
 export const restaurants = babdiaSchema.table("restaurants", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }),
   imageUrl: text("image_url"),
   naverLink: text("naver_link"),
   recommendMenu: varchar("recommend_menu", { length: 500 }),
