@@ -1,6 +1,29 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/auth-client";
+
 export default function LoginForm() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+
+    const { error } = await authClient.signIn.email({ email, password });
+    if (error) {
+      setError(error.message ?? "로그인에 실패했습니다.");
+      return;
+    }
+    router.push("/");
+  }
+
   return (
-    <form className="grid gap-3" onSubmit={(e) => e.preventDefault()}>
+    <form className="grid gap-3" onSubmit={handleSubmit}>
       <div className="grid gap-2">
         <div className="flex items-center justify-between">
           <label className="font-black text-[13px]" htmlFor="loginEmail">
@@ -16,6 +39,8 @@ export default function LoginForm() {
           type="email"
           autoComplete="email"
           placeholder="이메일 입력"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full px-3.5 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[14px] outline-none focus:border-[rgba(79,70,229,0.45)]
   focus:shadow-[0_0_0_6px_rgba(79,70,229,0.10)]"
         />
@@ -40,6 +65,8 @@ export default function LoginForm() {
           type="password"
           autoComplete="current-password"
           placeholder="비밀번호 입력"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full px-3.5 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[14px] outline-none focus:border-[rgba(79,70,229,0.45)]
   focus:shadow-[0_0_0_6px_rgba(79,70,229,0.10)]"
         />
@@ -52,6 +79,10 @@ export default function LoginForm() {
         </label>
         <span className="text-[12px] text-[#6B7280]">공용 PC에서는 해제</span>
       </div>
+
+      {error && (
+        <p className="text-[13px] text-red-500">{error}</p>
+      )}
 
       <button
         type="submit"
