@@ -1,4 +1,9 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export default function HomeHeader() {
+  const router = useRouter();
   return (
     <header
       className="header"
@@ -21,6 +26,9 @@ export default function HomeHeader() {
         <button
           className="login-btn"
           type="button"
+          onClick={() => {
+            router.push("/login");
+          }}
           style={{
             display: "flex",
             alignItems: "center",
