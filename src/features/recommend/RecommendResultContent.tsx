@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import AppShell from "@/components/layouts/app-shell";
 import ResultCard from "@/components/recommend-result/ResultCard";
 import ResultActions from "@/components/recommend-result/ResultActions";
-import DetailModal from "@/components/recommend-result/DetailModal";
+import RestaurantDetailView from "@/components/restaurant-detail/RestaurantDetailView";
 import SlotOverlay from "@/components/recommend-result/SlotOverlay";
 import { pickRecommendation, pickRecommendationExcluding } from "@/lib/result";
 import type { Restaurant } from "@/type/result";
+import type { RestaurantDetailRecord } from "@/data/restaurant-details";
 import styles from "@/components/recommend-result/result.module.css";
 
 const REROLL_DURATION_MS = 1200;
@@ -24,6 +26,9 @@ export default function RecommendResultContent() {
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<Restaurant | null>(null);
   const [detailRestaurantId, setDetailRestaurantId] = useState<string | null>(null);
+  const [detailData, setDetailData] = useState<RestaurantDetailRecord | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [isRerolling, setIsRerolling] = useState(false);
   const [slotEmojiIndex, setSlotEmojiIndex] = useState(0);
   const [cardKey, setCardKey] = useState(0);
@@ -60,6 +65,38 @@ export default function RecommendResultContent() {
       document.title = "";
     };
   }, []);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (!detailRestaurantId) {
+      setDetailData(null);
+      return;
+    }
+    setDetailLoading(true);
+    setDetailData(null);
+    fetch(`/api/restaurants/${detailRestaurantId}/detail`)
+      .then((res) => res.json())
+      .then(setDetailData)
+      .catch(() => setDetailData(null))
+      .finally(() => setDetailLoading(false));
+  }, [detailRestaurantId]);
+
+  const closeDetail = useCallback(() => setDetailRestaurantId(null), []);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeDetail();
+    };
+    if (detailRestaurantId) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [detailRestaurantId, closeDetail]);
 
   useEffect(() => {
     if (!isRerolling) return;
@@ -161,10 +198,52 @@ export default function RecommendResultContent() {
         </div>
       </div>
 
-      <DetailModal
-        restaurantId={detailRestaurantId}
-        onClose={() => setDetailRestaurantId(null)}
-      />
+      {mounted &&
+        detailRestaurantId &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className={styles.detailModalOverlay}
+            role="dialog"
+            aria-modal="true"
+            aria-label="식당 상세"
+            onClick={(e) => e.target === e.currentTarget && closeDetail()}
+          >
+            <div
+              className={styles.detailModalBox}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.detailModalHeader}>
+                <h2 className={styles.detailModalTitle}>식당 상세</h2>
+                <button
+                  type="button"
+                  className={styles.detailModalClose}
+                  onClick={closeDetail}
+                  aria-label="닫기"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className={styles.detailModalBody}>
+                {detailLoading && (
+                  <div className={styles.detailModalLoading}>불러오는 중...</div>
+                )}
+                {!detailLoading && detailData && (
+                  <RestaurantDetailView
+                    restaurant={detailData}
+                    restaurantId={detailRestaurantId}
+                  />
+                )}
+                {!detailLoading && !detailData && (
+                  <div className={styles.detailModalLoading}>
+                    상세 정보를 불러오지 못했습니다.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
       <SlotOverlay show={isRerolling} emojiIndex={slotEmojiIndex} />
     </AppShell>
   );
