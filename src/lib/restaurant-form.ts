@@ -6,13 +6,14 @@ export const CATEGORIES = [
   { value: "중식", label: "중식" },
   { value: "일식", label: "일식" },
   { value: "양식", label: "양식" },
+  { value: "샌드위치/햄버거", label: "샌드위치/햄버거" },
   { value: "기타", label: "기타" },
 ] as const;
 
 export const PRICE_RANGES = [
-  { value: "~ 8,000원", label: "~ 8,000원" },
-  { value: "8,000 ~ 12,000원", label: "8,000 ~ 12,000원" },
-  { value: "12,000원 이상", label: "12,000원 이상" },
+  { value: "10,000원 이하", label: "10,000원 이하" },
+  { value: "13,000원 이하", label: "13,000원 이하" },
+  { value: "13,000원 초과", label: "13,000원 초과" },
 ] as const;
 
 /** 사진 속 태그: 국물, 밥, 면, 혼밥가능, 웨이팅X, 매움, 횡단보도X */

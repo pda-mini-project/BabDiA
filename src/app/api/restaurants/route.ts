@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     const {
       name,
       priceRange,
+      walkMinutes,
       naverLink,
       selectedTags = [],
       recommendMenu,
@@ -43,6 +44,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const walkingMinutes =
+      walkMinutes != null && walkMinutes !== ""
+        ? parseInt(String(walkMinutes), 10)
+        : null;
+    const walkingMinutesValue =
+      walkingMinutes != null && !Number.isNaN(walkingMinutes) && walkingMinutes >= 0
+        ? walkingMinutes
+        : null;
+
     const [inserted] = await db
       .insert(restaurants)
       .values({
@@ -53,6 +63,7 @@ export async function POST(request: Request) {
           .filter(Boolean)
           .join("\n") || null,
         priceRange: priceRange?.trim() || null,
+        walkingMinutes: walkingMinutesValue,
       })
       .returning({ id: restaurants.id });
 
