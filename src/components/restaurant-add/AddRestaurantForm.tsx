@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   CATEGORIES,
   PRICE_RANGES,
@@ -11,6 +12,7 @@ import {
 import styles from "./add-restaurant.module.css";
 
 export default function AddRestaurantForm() {
+  const router = useRouter();
   const [form, setForm] = useState<AddRestaurantFormState>(getInitialFormState);
 
   const update = useCallback(<K extends keyof AddRestaurantFormState>(
@@ -64,6 +66,9 @@ export default function AddRestaurantForm() {
         }
         setForm(getInitialFormState());
         alert(data.message ?? "식당이 등록되었습니다.");
+        if (data.id != null) {
+          router.push(`/restaurants/detail/${data.id}`);
+        }
       } catch {
         setSubmitError("네트워크 오류가 발생했습니다.");
       } finally {
