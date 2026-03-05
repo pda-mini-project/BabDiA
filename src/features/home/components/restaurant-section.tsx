@@ -18,6 +18,7 @@ type HomeRestaurant = {
   rating: string | null;
   walkingMinutes: number | null;
   imageUrl: string | null;
+  naverLink: string | null;
 };
 
 type RestaurantSectionProps = {
@@ -37,6 +38,7 @@ export default function RestaurantSection({
   maxWalking,
   mealType,
 }: RestaurantSectionProps) {
+  const [fetchedImages, setFetchedImages] = useState<Record<number, string>>({});
   const [keyword, setKeyword] = useState(searchKeyword);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const router = useRouter();
@@ -111,6 +113,41 @@ export default function RestaurantSection({
   useEffect(() => {
     setKeyword(searchKeyword);
   }, [searchKeyword]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const candidates = restaurants.filter(
+      (restaurant) =>
+        !restaurant.imageUrl &&
+        !!restaurant.naverLink &&
+        !fetchedImages[restaurant.id],
+    );
+
+    if (candidates.length === 0) return;
+
+    void Promise.all(
+      candidates.map(async (restaurant) => {
+        try {
+          const res = await fetch(
+            `/api/restaurant-image?url=${encodeURIComponent(restaurant.naverLink!)}`,
+          );
+          const data = (await res.json()) as { imageUrl?: string | null };
+          const nextImageUrl = data.imageUrl;
+          if (!isMounted || !nextImageUrl) return;
+          setFetchedImages((prev) => {
+            if (prev[restaurant.id] === nextImageUrl) return prev;
+            return { ...prev, [restaurant.id]: nextImageUrl };
+          });
+        } catch {
+          // ignore image fetch error and keep fallback UI
+        }
+      }),
+    );
+
+    return () => {
+      isMounted = false;
+    };
+  }, [restaurants, fetchedImages]);
 
   const replaceWithParams = useCallback(
     (next: {
@@ -480,46 +517,49 @@ export default function RestaurantSection({
           </div>
         )}
 
-        {restaurants.map((restaurant) => (
-          <div
-            key={restaurant.id}
-            className="restaurant-card"
-            onClick={() => router.push(`/restaurants/detail/${restaurant.id}`)}
-            style={{
-              borderRadius: 20,
-              overflow: "hidden",
-              border: "1px solid var(--line, #e5e7eb)",
-              background: "#fff",
-              boxShadow: "var(--shadow, 0 10px 30px rgba(0,0,0,0.05))",
-              transition: "0.2s ease",
-              cursor: "pointer",
-            }}
-          >
+        {restaurants.map((restaurant) => {
+          const imageUrl = restaurant.imageUrl ?? fetchedImages[restaurant.id] ?? null;
+          return (
             <div
-              className="restaurant-img"
+              key={restaurant.id}
+              className="restaurant-card"
+              onClick={() => router.push(`/restaurants/detail/${restaurant.id}`)}
               style={{
-                height: 160,
-                background: restaurant.imageUrl
-                  ? `center / cover no-repeat url(${restaurant.imageUrl})`
-                  : "#e0e7ff",
+                borderRadius: 20,
+                overflow: "hidden",
+                border: "1px solid var(--line, #e5e7eb)",
+                background: "#fff",
+                boxShadow: "var(--shadow, 0 10px 30px rgba(0,0,0,0.05))",
+                transition: "0.2s ease",
+                cursor: "pointer",
               }}
-            />
-            <div className="restaurant-body" style={{ padding: 18 }}>
+            >
               <div
-                className="restaurant-title"
-                style={{ fontWeight: 900, marginBottom: 8 }}
-              >
-                {highlightedName(restaurant.name)}
-              </div>
-              <div
-                className="meta"
-                style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
-              >
-                {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분`}
+                className="restaurant-img"
+                style={{
+                  height: 160,
+                  background: imageUrl
+                    ? `center / cover no-repeat url(${imageUrl})`
+                    : "#e0e7ff",
+                }}
+              />
+              <div className="restaurant-body" style={{ padding: 18 }}>
+                <div
+                  className="restaurant-title"
+                  style={{ fontWeight: 900, marginBottom: 8 }}
+                >
+                  {highlightedName(restaurant.name)}
+                </div>
+                <div
+                  className="meta"
+                  style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
+                >
+                  {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분`}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
