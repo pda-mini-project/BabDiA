@@ -19,7 +19,6 @@ export type CreateRestaurantBody = {
   selectedTags?: string[];
   recommendMenu?: string;
   locationText?: string;
-  memo?: string;
 };
 
 /** 식당 추가: babdia.restaurants 저장, 선택 태그 있으면 restaurant_tags 연결 */
@@ -35,7 +34,6 @@ export async function POST(request: Request) {
       selectedTags = [],
       recommendMenu,
       locationText,
-      memo,
     } = body;
 
     if (!name?.trim()) {
@@ -61,9 +59,7 @@ export async function POST(request: Request) {
         category: category?.trim() || null,
         naverLink: naverLink?.trim() || null,
         recommendMenu: recommendMenu?.trim() || null,
-        locationText: [locationText?.trim(), memo?.trim()]
-          .filter(Boolean)
-          .join("\n") || null,
+        locationText: locationText?.trim() || null,
         priceRange: priceRange?.trim() || null,
         walkingMinutes: walkingMinutesValue,
       })

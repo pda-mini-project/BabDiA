@@ -55,7 +55,6 @@ export default function AddRestaurantForm() {
             selectedTags: Array.from(form.selectedTags),
             recommendMenu: form.recommendMenu,
             locationText: form.locationText,
-            memo: form.memo,
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -199,19 +198,6 @@ export default function AddRestaurantForm() {
             placeholder="예: 성수역 3번 출구 근처"
             value={form.locationText}
             onChange={(e) => update("locationText", e.target.value)}
-          />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="memo">
-            메모
-          </label>
-          <textarea
-            id="memo"
-            className={styles.textarea}
-            placeholder="후기 느낌 또는 참고 사항"
-            value={form.memo}
-            onChange={(e) => update("memo", e.target.value)}
           />
         </div>
 
