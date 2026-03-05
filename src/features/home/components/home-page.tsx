@@ -88,6 +88,7 @@ async function getHomeRestaurants({
             rating: restaurants.rating,
             walkingMinutes: restaurants.walkingMinutes,
             imageUrl: restaurants.imageUrl,
+            naverLink: restaurants.naverLink,
           })
           .from(restaurants)
           .where(whereClause)
@@ -102,6 +103,7 @@ async function getHomeRestaurants({
           rating: restaurants.rating,
           walkingMinutes: restaurants.walkingMinutes,
           imageUrl: restaurants.imageUrl,
+          naverLink: restaurants.naverLink,
         })
         .from(restaurants)
         .orderBy(sql`${restaurants.rating} desc nulls last`, desc(restaurants.createdAt))
@@ -117,6 +119,7 @@ async function getHomeRestaurants({
             rating: restaurants.rating,
             walkingMinutes: restaurants.walkingMinutes,
             imageUrl: restaurants.imageUrl,
+            naverLink: restaurants.naverLink,
           })
           .from(restaurants)
           .where(whereClause)
@@ -131,6 +134,7 @@ async function getHomeRestaurants({
           rating: restaurants.rating,
           walkingMinutes: restaurants.walkingMinutes,
           imageUrl: restaurants.imageUrl,
+          naverLink: restaurants.naverLink,
         })
         .from(restaurants)
         .orderBy(sql`${restaurants.walkingMinutes} asc nulls last`, desc(restaurants.createdAt))
@@ -145,6 +149,7 @@ async function getHomeRestaurants({
           rating: restaurants.rating,
           walkingMinutes: restaurants.walkingMinutes,
           imageUrl: restaurants.imageUrl,
+          naverLink: restaurants.naverLink,
         })
         .from(restaurants)
         .where(whereClause)
@@ -159,6 +164,7 @@ async function getHomeRestaurants({
         rating: restaurants.rating,
         walkingMinutes: restaurants.walkingMinutes,
         imageUrl: restaurants.imageUrl,
+        naverLink: restaurants.naverLink,
       })
       .from(restaurants)
       .orderBy(desc(restaurants.createdAt), desc(restaurants.id))
