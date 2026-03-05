@@ -12,6 +12,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.5.3",
     "better-auth": "^1.5.3",
     "drizzle-orm": "^0.45.1",
     "next": "16.1.6",

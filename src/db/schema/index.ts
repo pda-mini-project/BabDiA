@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 
 export { babdiaSchema } from "./base-schema";
-export { users } from "./auth.schema";
+export { user, session, account, verification } from "./auth.schema";
 export { restaurants } from "./restaurant.schema";
 export { reviews } from "./review.schema";
 export {
@@ -10,7 +10,7 @@ export {
   restaurantTags,
 } from "./tag.schema";
 
-import { users } from "./auth.schema";
+import { user, session, account } from "./auth.schema";
 import { restaurants } from "./restaurant.schema";
 import { reviews } from "./review.schema";
 import {
@@ -20,9 +20,12 @@ import {
 } from "./tag.schema";
 
 // ── Relations (순환 참조 방지를 위해 index에서 정의) ──
-export const usersRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
   reviews: many(reviews),
+  sessions: many(session),
+  accounts: many(account),
 }));
+
 
 export const restaurantsRelations = relations(restaurants, ({ many }) => ({
   reviews: many(reviews),
@@ -31,7 +34,7 @@ export const restaurantsRelations = relations(restaurants, ({ many }) => ({
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({
   restaurant: one(restaurants),
-  user: one(users),
+  user: one(user),
 }));
 
 export const tagCategoriesRelations = relations(tagCategories, ({ many }) => ({

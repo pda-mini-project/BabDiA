@@ -1,24 +1,7 @@
-import {
-  serial,
-  timestamp,
-  varchar,
-  text,
-  boolean,
-  index,
-} from "drizzle-orm/pg-core";
-import { babdiaSchema } from "./base-schema";
 import { relations } from "drizzle-orm";
+import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
-// // ── 유저 ──
-// export const users = babdiaSchema.table("users", {
-//   id: serial("id").primaryKey(),
-//   loginId: varchar("login_id", { length: 255 }).notNull(),
-//   password: varchar("password", { length: 255 }).notNull(),
-//   nickname: varchar("nickname", { length: 255 }).notNull(),
-//   createdAt: timestamp("created_at").defaultNow().notNull(),
-// });
-
-export const user = babdiaSchema.table("user", {
+export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -31,7 +14,7 @@ export const user = babdiaSchema.table("user", {
     .notNull(),
 });
 
-export const session = babdiaSchema.table(
+export const session = pgTable(
   "session",
   {
     id: text("id").primaryKey(),
@@ -50,7 +33,7 @@ export const session = babdiaSchema.table(
   (table) => [index("session_userId_idx").on(table.userId)],
 );
 
-export const account = babdiaSchema.table(
+export const account = pgTable(
   "account",
   {
     id: text("id").primaryKey(),
@@ -74,7 +57,7 @@ export const account = babdiaSchema.table(
   (table) => [index("account_userId_idx").on(table.userId)],
 );
 
-export const verification = babdiaSchema.table(
+export const verification = pgTable(
   "verification",
   {
     id: text("id").primaryKey(),
@@ -90,6 +73,10 @@ export const verification = babdiaSchema.table(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+}));
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
