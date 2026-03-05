@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./result.module.css";
 
 const SLOT_EMOJIS = ["🍱", "🍜", "🍔", "🥘", "🍣", "🥟", "🍝", "🍛"];
@@ -10,7 +12,12 @@ type SlotOverlayProps = {
 };
 
 export default function SlotOverlay({ show, emojiIndex }: SlotOverlayProps) {
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || typeof document === "undefined") return null;
+
+  const overlay = (
     <div
       className={`${styles.slotOverlay} ${show ? styles.slotOverlayShow : ""}`}
       aria-hidden={!show}
@@ -23,4 +30,6 @@ export default function SlotOverlay({ show, emojiIndex }: SlotOverlayProps) {
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 }
