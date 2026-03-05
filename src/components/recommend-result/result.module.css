@@ -232,13 +232,18 @@
   font-weight: 700;
 }
 
-/* 슬롯 오버레이 */
+/* 슬롯 오버레이 - body에 포탈로 렌더되어 전체 뷰포트 덮음 */
 .slotOverlay {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 100;
+  z-index: 9999;
   align-items: center;
   justify-content: center;
   flex-direction: column;
