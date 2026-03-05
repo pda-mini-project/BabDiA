@@ -12,6 +12,8 @@ export type RecommendFilterCondition = {
   priceRange: string | null;
   /** 도보 분 이하 (null이면 조건 없음) */
   maxWalkingMinutes: number | null;
+  /** 분류(음식 종류) - DB restaurants.category 값 (한식, 중식, 일식, 양식, 샌드위치/햄버거) */
+  category: string | null;
 };
 
 const TAG_REQUIRE: Record<string, string> = {
@@ -26,7 +28,7 @@ const TAG_REQUIRE: Record<string, string> = {
 
 const TAG_EXCLUDE: Record<string, string> = {
   "국물 없는": "국물",
-  순한: "매움",
+  "안 매운": "매움",
   불가: "혼밥가능",
 };
 
@@ -41,16 +43,29 @@ const WALKING_TAGS: Record<string, number> = {
   "도보 10분": 10,
 };
 
+/** 점메추 필터 '음식 종류' 태그 → DB restaurants.category 값 (폼에서 저장하는 값과 동일) */
+const CATEGORY_TAGS: Record<string, string> = {
+  한식: "한식",
+  중식: "중식",
+  일식: "일식",
+  양식: "양식",
+  "햄버거/샌드위치": "샌드위치/햄버거",
+};
+
 export function parseRecommendTags(tagStrings: string[]): RecommendFilterCondition {
   const requireTags: string[] = [];
   const excludeTags: string[] = [];
   let priceRange: string | null = null;
   let maxWalkingMinutes: number | null = null;
+  let category: string | null = null;
 
   for (const t of tagStrings) {
     const tag = t?.trim();
     if (!tag) continue;
 
+    if (CATEGORY_TAGS[tag]) {
+      category = CATEGORY_TAGS[tag];
+    }
     if (TAG_REQUIRE[tag]) {
       const dbTag = TAG_REQUIRE[tag];
       if (!requireTags.includes(dbTag)) requireTags.push(dbTag);
@@ -75,5 +90,6 @@ export function parseRecommendTags(tagStrings: string[]): RecommendFilterConditi
     excludeTags,
     priceRange,
     maxWalkingMinutes,
+    category,
   };
 }

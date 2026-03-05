@@ -73,6 +73,7 @@ export async function GET(request: Request) {
       .select({
         id: restaurants.id,
         name: restaurants.name,
+        category: restaurants.category,
         recommendMenu: restaurants.recommendMenu,
         locationText: restaurants.locationText,
         priceRange: restaurants.priceRange,
@@ -131,11 +132,24 @@ export async function GET(request: Request) {
 
     const filtered = allRestaurants.filter((r) => {
       if (!allowedIds.has(r.id)) return false;
-      if (condition.priceRange != null && r.priceRange !== condition.priceRange) return false;
+      if (condition.priceRange != null) {
+        const pr = condition.priceRange;
+        if (pr === "10,000원 이하") {
+          if (r.priceRange !== "10,000원 이하") return false;
+        } else if (pr === "13,000원 이하") {
+          if (
+            r.priceRange !== "10,000원 이하" &&
+            r.priceRange !== "13,000원 이하"
+          )
+            return false;
+        }
+        // "13,000원 초과" 선택 시에는 가격대 상관없이 통과
+      }
       if (condition.maxWalkingMinutes != null) {
         const w = r.walkingMinutes;
         if (w == null || w > condition.maxWalkingMinutes) return false;
       }
+      if (condition.category != null && r.category !== condition.category) return false;
       return true;
     });
 
