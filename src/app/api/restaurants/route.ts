@@ -28,6 +28,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as CreateRestaurantBody;
     const {
       name,
+      category,
       priceRange,
       walkMinutes,
       naverLink,
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
       .insert(restaurants)
       .values({
         name: name.trim(),
+        category: category?.trim() || null,
         naverLink: naverLink?.trim() || null,
         recommendMenu: recommendMenu?.trim() || null,
         locationText: [locationText?.trim(), memo?.trim()]

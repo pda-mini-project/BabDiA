@@ -1,0 +1,1 @@
+ALTER TABLE "babdia"."restaurants" ADD COLUMN "category" varchar(100);
