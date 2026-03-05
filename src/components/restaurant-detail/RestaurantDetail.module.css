@@ -56,35 +56,65 @@
 }
 
 .restaurantHero {
-  display: grid;
-  grid-template-columns: 132px 1fr;
-  gap: 20px;
-  align-items: center;
-  min-height: 200px;
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+  min-height: 220px;
+  flex-wrap: wrap;
 }
 
 .heroImg {
-  height: 140px;
+  flex: 1 1 45%;
+  min-width: 260px;
+  min-height: 220px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(145deg, #e8ebff 0%, #f5f5f7 100%);
+  background: linear-gradient(145deg, #e6e8ff 0%, #f6f6f8 100%);
   border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .heroContent {
+  flex: 1 1 45%;
+  min-width: 260px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  justify-content: space-between;
 }
 
 .heroTitle {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
+  align-items: center;
+}
+
+.heroTitleText {
+  display: flex;
+  flex-direction: column;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary);
 }
 
 .name {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.02em;
@@ -99,88 +129,86 @@
 }
 
 .ratingPill {
-  background: var(--bg);
+  background: #f3f4f6;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 8px 14px;
-  text-align: right;
-  min-width: 100px;
-  flex-shrink: 0;
+  padding: 12px 18px;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .ratingPill strong {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 800;
 }
 
 .muted {
   display: block;
   color: var(--muted);
   font-size: 12px;
-  margin-top: 4px;
+  margin: 0;
 }
 
 .btnRow {
   display: flex;
   gap: 10px;
+  margin-top: 16px;
 }
 
 .btn {
-  padding: 10px 16px;
-  border-radius: var(--radius-sm);
+  width: 100%;
+  justify-content: center;
+  padding: 14px 20px;
+  font-size: 16px;
+  min-height: 48px;
+  border-radius: 14px;
+  letter-spacing: 0.02em;
   border: 1px solid var(--line);
-  background: #fff;
+  background: #4f46e5;
+  color: #fff;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  font-weight: 900;
+  transition: 0.2s ease;
   white-space: nowrap;
-  text-align: center;
   display: inline-flex;
   align-items: center;
+}
+
+.btnFull {
+  width: 100%;
   justify-content: center;
+  padding-left: 28px;
+  padding-right: 28px;
+  border-radius: 18px;
 }
 
-.btnSoft {
-  border-color: rgba(79, 70, 229, 0.3);
-  background: var(--soft);
-  color: var(--primary);
+.starPicker {
+  display: flex;
+  gap: 2px;
 }
 
-.btnSoft:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-
-.btnPrimary {
+.starButton {
   border: none;
-  background: var(--primary);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  color: #d1d5db;
+  padding: 2px;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
 }
 
-.btnPrimary:hover {
-  filter: brightness(1.05);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+.starButton:hover {
+  transform: translateY(-2px);
 }
 
-.reviewSection {
-  margin-top: 0;
-}
-
-.reviewHeader {
-  margin-bottom: 20px;
-}
-
-.reviewHeader h3 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.reviewHeader .sub {
-  margin-top: 4px;
+.starActive {
+  color: #fbbf24;
 }
 
 .form {
@@ -191,9 +219,14 @@
 }
 
 .formGrid {
-  display: grid;
-  grid-template-columns: 120px 1fr;
+  /* display: grid; */
+  /* grid-template-columns: 120px 1fr; */
+  display: flex;
   gap: 12px;
+}
+
+.menuBox {
+  flex-grow: 1;
 }
 
 .input,
@@ -206,7 +239,9 @@
   font-family: inherit;
   font-size: 14px;
   background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .input:focus,
@@ -246,28 +281,44 @@
   min-height: 72px;
 }
 
-.reviewTop {
+.reviewRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.reviewTop strong {
-  font-size: 13px;
+.reviewNickname {
+  font-size: 14px;
+  color: var(--primary);
+  letter-spacing: 0.01em;
+  margin-top: 8px;
+}
+
+.reviewComment {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.reviewMenuDetail {
+  font-size: 14px;
+  margin: 0 0 6px 0;
+  color: var(--muted);
+  max-width: 320px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.reviewHeader h3 {
+  font-weight: 800;
 }
 
 .stars {
-  font-size: 12px;
-  color: #f59e0b;
-  font-weight: 950;
-  white-space: nowrap;
-}
-
-.reviewText {
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 16px;
 }
 
 .infoColumn {
@@ -339,19 +390,15 @@
   }
 
   .restaurantHero {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    flex-direction: column;
   }
 
   .heroImg {
-    height: 160px;
-  }
-
-  .restaurantHero {
-    min-height: 0;
+    width: 100%;
+    min-height: 200px;
   }
 
   .btnRow {
-    flex-direction: column;
+    gap: 12px;
   }
 }
