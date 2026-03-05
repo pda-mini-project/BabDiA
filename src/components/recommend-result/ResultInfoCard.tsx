@@ -27,12 +27,6 @@ export default function ResultInfoCard({
         </span>
       </div>
       <div className={styles.infoRow}>
-        <span className={styles.infoKey}>운영 시간</span>
-        <span className={styles.infoVal}>
-          {restaurant.operatingHours ?? "-"}
-        </span>
-      </div>
-      <div className={styles.infoRow}>
         <span className={styles.infoKey}>혼밥</span>
         <span className={styles.infoVal}>{restaurant.solo ?? "-"}</span>
       </div>
