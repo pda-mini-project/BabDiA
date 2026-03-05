@@ -8,7 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { babdiaSchema } from "./base-schema";
 import { restaurants } from "./restaurant.schema";
-import { users } from "./auth.schema";
+import { user } from "./auth.schema";
 
 // ── 후기 ──
 export const reviews = babdiaSchema.table(
@@ -18,9 +18,9 @@ export const reviews = babdiaSchema.table(
     restaurantId: integer("restaurant_id")
       .notNull()
       .references(() => restaurants.id, { onDelete: "cascade" }),
-    userId: integer("user_id")
+    userId: text("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     uuid: varchar("uuid", { length: 36 }).notNull().unique(),
     rating: integer("rating").notNull(),
     content: text("content"),
