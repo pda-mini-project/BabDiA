@@ -1,12 +1,13 @@
 /**
- * 태그 카테고리: 거리, 국물, 밥/면, 음식 종류, 가격, 횡단보도, 맵기, 혼밥, 웨이팅
+ * 태그 카테고리: 거리, 국물, 밥, 면, 음식 종류, 가격, 횡단보도, 맵기, 혼밥, 웨이팅
  * 식당 추가·점메추 API에서 공통 사용
  */
 
 export const TAG_CATEGORY_CODES = [
   "distance",
   "soup",
-  "meal",
+  "rice",
+  "noodle",
   "cuisine",
   "price",
   "crosswalk",
@@ -26,8 +27,8 @@ export const TAG_NAME_TO_CATEGORY_CODE: Record<string, TagCategoryCode> = {
   // 국물
   국물: "soup",
   // 밥/면
-  밥: "meal",
-  면: "meal",
+  밥: "rice",
+  면: "noodle",
   // 음식 종류
   한식: "cuisine",
   중식: "cuisine",
@@ -66,7 +67,8 @@ export function getCategoryCodeForTagName(tagName: string): TagCategoryCode | un
 export const TAG_CATEGORIES_SEED: { name: string; code: TagCategoryCode }[] = [
   { name: "거리", code: "distance" },
   { name: "국물", code: "soup" },
-  { name: "밥/면", code: "meal" },
+  { name: "밥", code: "rice" },
+  { name: "면", code: "noodle" },
   { name: "음식 종류", code: "cuisine" },
   { name: "가격", code: "price" },
   { name: "횡단보도", code: "crosswalk" },

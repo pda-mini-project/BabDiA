@@ -7,7 +7,7 @@ import HeroSection from "./hero-section";
 import RestaurantSection from "./restaurant-section";
 
 type HomeSort = "latest" | "rating_desc" | "walking_asc";
-type HomeMealType = "all" | "soup" | "rice_noodle";
+type HomeMealType = "all" | "soup" | "rice" | "noodle" | "rice_noodle";
 
 type HomePageProps = {
   searchQuery?: string;
@@ -33,7 +33,12 @@ function toHomeSort(sortBy: string): HomeSort {
 }
 
 function toHomeMealType(mealType: string): HomeMealType {
-  if (mealType === "soup" || mealType === "rice_noodle") {
+  if (
+    mealType === "soup" ||
+    mealType === "rice" ||
+    mealType === "noodle" ||
+    mealType === "rice_noodle"
+  ) {
     return mealType;
   }
   return "all";
@@ -60,16 +65,28 @@ async function getHomeRestaurants({
       filters.push(sql`${restaurants.walkingMinutes} <= ${walkingCeil}`);
     }
     if (mealType !== "all") {
-      const mealTagName = mealType === "soup" ? "국물" : "밥/면";
-      filters.push(
-        sql`exists (
-          select 1
-          from ${restaurantTags}
-          inner join ${tags} on ${tags.id} = ${restaurantTags.tagId}
-          where ${restaurantTags.restaurantId} = ${restaurants.id}
-            and ${tags.name} = ${mealTagName}
-        )`,
-      );
+      if (mealType === "rice_noodle") {
+        filters.push(
+          sql`exists (
+            select 1
+            from ${restaurantTags}
+            inner join ${tags} on ${tags.id} = ${restaurantTags.tagId}
+            where ${restaurantTags.restaurantId} = ${restaurants.id}
+              and ${tags.name} in ('밥', '면')
+          )`,
+        );
+      } else {
+        const mealTagName = mealType === "soup" ? "국물" : mealType === "rice" ? "밥" : "면";
+        filters.push(
+          sql`exists (
+            select 1
+            from ${restaurantTags}
+            inner join ${tags} on ${tags.id} = ${restaurantTags.tagId}
+            where ${restaurantTags.restaurantId} = ${restaurants.id}
+              and ${tags.name} = ${mealTagName}
+          )`,
+        );
+      }
     }
 
     const whereClause =
