@@ -27,7 +27,7 @@ type RestaurantSectionProps = {
   sortBy: "latest" | "rating_desc" | "walking_asc";
   minRating: number;
   maxWalking: number;
-  mealType: "all" | "soup" | "rice_noodle";
+  mealType: "all" | "soup" | "rice" | "noodle" | "rice_noodle";
 };
 
 export default function RestaurantSection({
@@ -65,6 +65,10 @@ export default function RestaurantSection({
     sortBy !== "latest" ? `정렬 ${sortLabel}` : null,
     mealType === "soup"
       ? "유형 국물"
+      : mealType === "rice"
+        ? "유형 밥"
+        : mealType === "noodle"
+          ? "유형 면"
       : mealType === "rice_noodle"
         ? "유형 밥/면"
         : null,
@@ -153,7 +157,7 @@ export default function RestaurantSection({
     (next: {
       q?: string;
       sort?: "latest" | "rating_desc" | "walking_asc";
-      mealType?: "all" | "soup" | "rice_noodle";
+      mealType?: "all" | "soup" | "rice" | "noodle" | "rice_noodle";
       minRating?: number;
       maxWalking?: number;
     }) => {
@@ -272,12 +276,13 @@ export default function RestaurantSection({
   ];
 
   const mealTypeOptions: Array<{
-    value: "all" | "soup" | "rice_noodle";
+    value: "all" | "soup" | "rice" | "noodle";
     label: string;
   }> = [
     { value: "all", label: "전체" },
     { value: "soup", label: "국물" },
-    { value: "rice_noodle", label: "밥/면" },
+    { value: "rice", label: "밥" },
+    { value: "noodle", label: "면" },
   ];
 
   return (
