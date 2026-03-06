@@ -4,7 +4,7 @@ import type { PresetKey, PresetItem, FilterGroup } from "@/type/recommend";
 export const PRESET_MAP: Record<PresetKey, string[]> = {
   sunny: ["도보 10분", "국물 없는", "밥", "안 매운", "없어야 함"],
   rainy: ["도보 5분", "국물 있는", "밥", "없을 선호"],
-  cold: ["국물 있는", "매운", "밥", "한식"],
+  cold: ["국물 있는", "밥", "한식"],
   hot: ["국물 없는", "면", "도보 5분", "10,000원 이하"],
   tired: ["도보 5분", "가능", "없을 선호", "10,000원 이하"],
   happy: ["거리_상관없음", "가격_상관없음", "있어도 됨", "양식"],
