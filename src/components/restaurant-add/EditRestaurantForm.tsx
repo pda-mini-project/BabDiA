@@ -6,7 +6,9 @@ import {
   ADD_RESTAURANT_TAGS,
   CATEGORIES,
   PRICE_RANGES,
+  SOUP_TAG_OPTIONS,
   type AddRestaurantFormState,
+  type SoupOption,
 } from "@/lib/restaurant-form";
 import styles from "./add-restaurant.module.css";
 
@@ -25,16 +27,28 @@ type EditRestaurantFormProps = {
   };
 };
 
+const SOUP_VALUES = ["국물있음", "국물없음", "국물둘다"] as const;
+
 function createFormState(
   initialData: EditRestaurantFormProps["initialData"],
 ): AddRestaurantFormState {
+  const tags = initialData.selectedTags;
+  const soupOption: AddRestaurantFormState["soupOption"] = tags.includes("국물있음")
+    ? "국물있음"
+    : tags.includes("국물없음")
+      ? "국물없음"
+      : tags.includes("국물둘다")
+        ? "국물둘다"
+        : "";
+  const selectedTags = new Set(tags.filter((t) => !SOUP_VALUES.includes(t)));
   return {
     name: initialData.name,
     category: initialData.category || CATEGORIES[0].value,
     priceRange: initialData.priceRange || PRICE_RANGES[0].value,
     walkMinutes: initialData.walkMinutes,
     naverLink: initialData.naverLink,
-    selectedTags: new Set(initialData.selectedTags),
+    soupOption,
+    selectedTags,
     recommendMenu: initialData.recommendMenu,
     locationText: initialData.locationText,
   };
@@ -89,7 +103,10 @@ export default function EditRestaurantForm({
             priceRange: form.priceRange,
             walkMinutes: form.walkMinutes,
             naverLink: form.naverLink,
-            selectedTags: Array.from(form.selectedTags),
+            selectedTags: [
+              ...(form.soupOption ? [form.soupOption] : []),
+              ...Array.from(form.selectedTags),
+            ],
             recommendMenu: form.recommendMenu,
             locationText: form.locationText,
           }),
@@ -193,6 +210,25 @@ export default function EditRestaurantForm({
           </div>
         </div>
 
+        <div className={styles.field}>
+          <span className={styles.label}>국물 (하나만 선택)</span>
+          <div className={styles.chips}>
+            {SOUP_TAG_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`${styles.chip} ${form.soupOption === opt.value ? styles.chipActive : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="soupOption"
+                  checked={form.soupOption === opt.value}
+                  onChange={() => update("soupOption", opt.value as SoupOption)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
         <div className={styles.field}>
           <span className={styles.label}>태그 (복수 선택)</span>
           <div className={styles.chips}>
