@@ -3,10 +3,11 @@ import AuthCard from "@/features/auth/components/auth-card";
 import { resolveRedirect, RedirectSearchParams } from "@/lib/auth/redirect";
 
 type LoginPageProps = {
-  searchParams?: RedirectSearchParams;
+  searchParams?: RedirectSearchParams | Promise<RedirectSearchParams | undefined>;
 };
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const redirect = await resolveRedirect(searchParams);
   return (
     <AppShell>
       <div className="flex flex-col items-center">
@@ -19,7 +20,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         </header>
 
-        <AuthCard defaultTab="login" redirect={resolveRedirect(searchParams)} />
+        <AuthCard defaultTab="login" redirect={redirect} />
       </div>
     </AppShell>
   );
