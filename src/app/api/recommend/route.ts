@@ -23,7 +23,7 @@ function toResultRestaurant(
 ): Restaurant {
   const hasWaitingX = tagNames.includes("웨이팅X");
   const hasSolo = tagNames.includes("혼밥가능");
-  const hasCrosswalkX = tagNames.includes("횡단보도X");
+  const hasCrosswalkX = tagNames.includes("신호등X");
   return {
     id: String(row.id),
     name: row.name,

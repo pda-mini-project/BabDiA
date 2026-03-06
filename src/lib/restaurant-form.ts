@@ -16,7 +16,7 @@ export const PRICE_RANGES = [
   { value: "13,000원 초과", label: "13,000원 초과" },
 ] as const;
 
-/** 사진 속 태그: 국물, 밥, 면, 혼밥가능, 웨이팅X, 매움, 횡단보도X */
+/** 사진 속 태그: 국물, 밥, 면, 혼밥가능, 웨이팅X, 매움, 신호등X */
 export const ADD_RESTAURANT_TAGS = [
   "국물",
   "밥",
@@ -24,7 +24,7 @@ export const ADD_RESTAURANT_TAGS = [
   "혼밥가능",
   "웨이팅X",
   "매움",
-  "횡단보도X",
+  "신호등X",
 ] as const;
 
 export type AddRestaurantFormState = {

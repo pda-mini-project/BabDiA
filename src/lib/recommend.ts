@@ -22,7 +22,7 @@ export const PRESETS: PresetItem[] = [
   { key: "stressed", icon: "🧘‍♀️", label: "스트레스" },
 ];
 
-/** 사진 속 세부 조건 그대로. 거리/가격/횡단보도 '상관없음'은 그룹별로 독립 */
+/** 사진 속 세부 조건 그대로. 거리/가격/신호등 '상관없음'은 그룹별로 독립 */
 export const FILTERS: FilterGroup[] = [
   {
     label: "📍 거리",
@@ -47,7 +47,7 @@ export const FILTERS: FilterGroup[] = [
     tags: ["10,000원 이하", "13,000원 이하", "가격_상관없음"],
     singleChoice: true,
   },
-  { label: "🚶‍♀️ 횡단보도", tags: ["없어야 함", "횡단보도_상관없음"] },
+  { label: "🚦 신호등", tags: ["없어야 함", "신호등_상관없음"] },
   { label: "🌶️ 맵기", tags: ["매운", "안 매운"] },
   { label: "🧑‍🤝‍🧑 혼밥", tags: ["가능", "불가"] },
   { label: "⌛ 웨이팅", tags: ["없을 선호", "있어도 됨"] },
