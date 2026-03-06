@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/auth-client";
 
-export default function LoginForm() {
+interface LoginFormProps {
+  redirect?: string | null;
+}
+
+export default function LoginForm({ redirect }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +24,7 @@ export default function LoginForm() {
       setError(error.message ?? "로그인에 실패했습니다.");
       return;
     }
-    router.push("/");
+    router.push(redirect ?? "/");
   }
 
   return (

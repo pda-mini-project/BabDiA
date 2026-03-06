@@ -7,11 +7,18 @@ type Tab = "login" | "signup";
 
 interface AuthCardProps {
   defaultTab?: Tab;
+  redirect?: string | null;
 }
 
-export default function AuthCard({ defaultTab = "login" }: AuthCardProps) {
+export default function AuthCard({
+  defaultTab = "login",
+  redirect,
+}: AuthCardProps) {
   const router = useRouter();
   const tab = defaultTab;
+  const redirectQuery = redirect
+    ? `?redirect=${encodeURIComponent(redirect)}`
+    : "";
 
   return (
     <div className="w-full max-w-[520px] bg-white rounded-[18px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-[#E5E7EB]">
@@ -30,7 +37,7 @@ export default function AuthCard({ defaultTab = "login" }: AuthCardProps) {
         <div className="inline-flex p-1.5 rounded-full bg-[#F8FAFC] border border-[#E5E7EB] gap-1.5">
           <button
             type="button"
-            onClick={() => router.push("/login")}
+            onClick={() => router.push(`/login${redirectQuery}`)}
             className={`px-3 py-2.5 rounded-full font-black text-[13px] cursor-pointer ${
               tab === "login"
                 ? "bg-white text-[#111827] shadow-[0_6px_16px_rgba(0,0,0,0.06)]"
@@ -41,7 +48,7 @@ export default function AuthCard({ defaultTab = "login" }: AuthCardProps) {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/signup")}
+            onClick={() => router.push(`/signup${redirectQuery}`)}
             className={`px-3 py-2.5 rounded-full font-black text-[13px] cursor-pointer ${
               tab === "signup"
                 ? "bg-white text-[#111827] shadow-[0_6px_16px_rgba(0,0,0,0.06)]"
@@ -54,7 +61,7 @@ export default function AuthCard({ defaultTab = "login" }: AuthCardProps) {
       </div>
 
       <div className="mt-[18px]">
-        {tab === "login" ? <LoginForm /> : <SignupForm />}
+        {tab === "login" ? <LoginForm redirect={redirect} /> : <SignupForm />}
       </div>
     </div>
   );
