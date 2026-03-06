@@ -172,7 +172,7 @@ export default function RecommendResultContent() {
         return;
       }
 
-      setSelectStatus("오늘 점심 식당으로 저장했어요.");
+      router.push("/");
     } catch (error) {
       console.error("[recommend selection]", error);
       setSelectStatus(

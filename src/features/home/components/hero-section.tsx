@@ -45,6 +45,7 @@ function formatMS(ms: number) {
 export default function HeroSection() {
   // SSR/CSR 초기 렌더를 동일하게 맞춰 hydration mismatch 방지
   const [left, setLeft] = useState(0);
+  const [selectedRestaurantName, setSelectedRestaurantName] = useState<string | null>(null);
   const firedRef = useRef(false);
   const router = useRouter();
 
@@ -85,6 +86,24 @@ export default function HeroSection() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    fetch("/api/recommend/selection/today")
+      .then((res) => res.json())
+      .then((data: { restaurantName?: string | null }) => {
+        if (!active) return;
+        setSelectedRestaurantName(data.restaurantName ?? null);
+      })
+      .catch(() => {
+        if (!active) return;
+        setSelectedRestaurantName(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="section" style={{ marginBottom: 48 }}>
       <div
@@ -112,7 +131,9 @@ export default function HeroSection() {
           }}
         >
           <h2 style={{ fontSize: 24, margin: 0, fontWeight: 900 }}>
-            🍽️ 오늘은 어떤 메뉴가 좋을까요?
+            {selectedRestaurantName
+              ? `오늘 내가 갈 식당은 : ${selectedRestaurantName}`
+              : "🍽️ 오늘은 어떤 메뉴가 좋을까요?"}
           </h2>
 
           <div
