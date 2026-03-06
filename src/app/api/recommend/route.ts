@@ -127,7 +127,8 @@ export async function GET(request: Request) {
       }
       if (condition.maxWalkingMinutes != null) {
         const w = r.walkingMinutes;
-        if (w == null || w > condition.maxWalkingMinutes) return false;
+        // 도보 미입력(null)은 거리 조건에서 통과(후보 포함). 입력된 값만 초과 시 제외.
+        if (w != null && w > condition.maxWalkingMinutes) return false;
       }
       if (condition.category != null && r.category !== condition.category) return false;
       return true;

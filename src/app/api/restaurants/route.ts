@@ -7,7 +7,10 @@ import {
   tags,
   restaurantTags,
 } from "@/db/schema";
-import { getCategoryCodeForTagName } from "@/lib/tag-categories";
+import {
+  getCategoryCodeForTagName,
+  TAG_CATEGORIES_SEED,
+} from "@/lib/tag-categories";
 
 export type CreateRestaurantBody = {
   name: string;
@@ -93,6 +96,14 @@ export async function POST(request: Request) {
     const restaurantId = inserted.id;
 
     if (selectedTags.length > 0) {
+      // 국물/밥/면/맵기 등 태그 저장을 위해 tag_categories가 없으면 시드로 채움 (마이그레이션 미실행 대비)
+      await db
+        .insert(tagCategories)
+        .values(
+          TAG_CATEGORIES_SEED.map(({ name, code }) => ({ name, code })),
+        )
+        .onConflictDoNothing({ target: tagCategories.code });
+
       for (const tagName of selectedTags) {
         const trimmed = tagName?.trim();
         if (!trimmed) continue;
