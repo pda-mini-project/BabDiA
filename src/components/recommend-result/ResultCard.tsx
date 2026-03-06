@@ -7,9 +7,16 @@ import styles from "./result.module.css";
 type ResultCardProps = {
   restaurant: Restaurant;
   cardKey?: string | number;
+  onSelectRestaurant: () => void;
+  isSelecting: boolean;
 };
 
-export default function ResultCard({ restaurant, cardKey }: ResultCardProps) {
+export default function ResultCard({
+  restaurant,
+  cardKey,
+  onSelectRestaurant,
+  isSelecting,
+}: ResultCardProps) {
   const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
   const imageUrl = restaurant.imageUrl ?? fetchedUrl ?? null;
 
@@ -53,6 +60,14 @@ export default function ResultCard({ restaurant, cardKey }: ResultCardProps) {
             </span>
           ))}
         </div>
+        <button
+          type="button"
+          className={styles.resultPickCta}
+          onClick={onSelectRestaurant}
+          disabled={isSelecting}
+        >
+          {isSelecting ? "저장 중..." : "이 식당에서 먹기"}
+        </button>
       </div>
     </div>
   );

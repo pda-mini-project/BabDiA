@@ -21,6 +21,7 @@ type HomeRestaurant = {
   imageUrl: string | null;
   naverLink: string | null;
   reviewCount: number;
+  todaySelectionCount: number;
 };
 
 type RestaurantSectionProps = {
@@ -35,6 +36,16 @@ type RestaurantSectionProps = {
   totalCount?: number;
 };
 
+function getResponsiveMaxAvatarCount(width: number) {
+  console.log(width)
+  if (width < 695) return 0;
+  if (width < 750) return 2;
+  if (width < 900) return 5;
+  if (width < 1200) return 6;
+  if (width < 1536) return 7;
+  return 7;
+}
+
 export default function RestaurantSection({
   restaurants,
   searchKeyword,
@@ -45,10 +56,18 @@ export default function RestaurantSection({
   pageSize = 20,
   totalCount,
 }: RestaurantSectionProps) {
-  const [fetchedImages, setFetchedImages] = useState<Record<number, string>>({});
+  const RIGHT_LABEL_PADDING = 12;
+  const AVATAR_COLORS = ["#fee2e2", "#ffedd5", "#fef3c7", "#dcfce7", "#dbeafe"];
+  const AVATAR_ANIMALS = ["🐶", "🐱", "🐰", "🐻", "🦊", "🐼", "🐯", "🐹"];
+  const [fetchedImages, setFetchedImages] = useState<Record<number, string>>(
+    {},
+  );
+  const [maxAvatarCount, setMaxAvatarCount] = useState(7);
   const [keyword, setKeyword] = useState(searchKeyword);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [extraRestaurants, setExtraRestaurants] = useState<HomeRestaurant[]>([]);
+  const [extraRestaurants, setExtraRestaurants] = useState<HomeRestaurant[]>(
+    [],
+  );
   const [nextPage, setNextPage] = useState(2);
   const [hasMore, setHasMore] = useState(restaurants.length >= pageSize);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -70,7 +89,27 @@ export default function RestaurantSection({
     setNextPage(2);
     setHasMore(restaurants.length >= pageSize);
     loadingMoreRef.current = false;
-  }, [restaurants, pageSize, searchKeyword, sortBy, minRating, maxWalking, mealType]);
+  }, [
+    restaurants,
+    pageSize,
+    searchKeyword,
+    sortBy,
+    minRating,
+    maxWalking,
+    mealType,
+  ]);
+
+  useEffect(() => {
+    const syncMaxAvatarCount = () => {
+      setMaxAvatarCount(getResponsiveMaxAvatarCount(window.innerWidth));
+    };
+
+    syncMaxAvatarCount();
+    window.addEventListener("resize", syncMaxAvatarCount);
+    return () => {
+      window.removeEventListener("resize", syncMaxAvatarCount);
+    };
+  }, []);
 
   // 스크롤 시 추가 로드 (Intersection Observer)
   useEffect(() => {
@@ -92,12 +131,14 @@ export default function RestaurantSection({
         });
         fetch(`/api/home/restaurants?${params.toString()}`)
           .then((res) => res.json())
-          .then((data: { restaurants?: HomeRestaurant[]; hasMore?: boolean }) => {
-            const list = data.restaurants ?? [];
-            setExtraRestaurants((prev) => [...prev, ...list]);
-            setNextPage((p) => p + 1);
-            setHasMore(Boolean(data.hasMore));
-          })
+          .then(
+            (data: { restaurants?: HomeRestaurant[]; hasMore?: boolean }) => {
+              const list = data.restaurants ?? [];
+              setExtraRestaurants((prev) => [...prev, ...list]);
+              setNextPage((p) => p + 1);
+              setHasMore(Boolean(data.hasMore));
+            },
+          )
           .finally(() => {
             loadingMoreRef.current = false;
             setLoadingMore(false);
@@ -107,7 +148,16 @@ export default function RestaurantSection({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, nextPage, searchKeyword, sortBy, minRating, maxWalking, mealType]);
+  }, [
+    hasMore,
+    loadingMore,
+    nextPage,
+    searchKeyword,
+    sortBy,
+    minRating,
+    maxWalking,
+    mealType,
+  ]);
 
   const trimmedSearchKeyword = searchKeyword.trim();
   const hasSearchKeyword = trimmedSearchKeyword.length > 0;
@@ -133,9 +183,9 @@ export default function RestaurantSection({
         ? "유형 밥"
         : mealType === "noodle"
           ? "유형 면"
-      : mealType === "rice_noodle"
-        ? "유형 밥/면"
-        : null,
+          : mealType === "rice_noodle"
+            ? "유형 밥/면"
+            : null,
     minRating > 0 ? `평점 ${minRating} 이상` : null,
     maxWalking > 0 ? `도보 ${maxWalking}분 이내` : null,
   ].filter((item): item is string => item !== null);
@@ -175,11 +225,7 @@ export default function RestaurantSection({
         );
       }
 
-      return (
-        <Fragment key={`${name}-text-${index}`}>
-          {part}
-        </Fragment>
-      );
+      return <Fragment key={`${name}-text-${index}`}>{part}</Fragment>;
     });
   };
 
@@ -592,12 +638,24 @@ export default function RestaurantSection({
         )}
 
         {displayList.map((restaurant) => {
-          const imageUrl = restaurant.imageUrl ?? fetchedImages[restaurant.id] ?? null;
+          const imageUrl =
+            restaurant.imageUrl ?? fetchedImages[restaurant.id] ?? null;
+          const todaySelectionCount = Math.max(
+            0,
+            restaurant.todaySelectionCount,
+          );
+          const avatarCount = Math.min(todaySelectionCount, maxAvatarCount);
+          const overflowCount = Math.max(
+            0,
+            todaySelectionCount - maxAvatarCount,
+          );
           return (
             <div
               key={restaurant.id}
               className="restaurant-card"
-              onClick={() => router.push(`/restaurants/detail/${restaurant.id}`)}
+              onClick={() =>
+                router.push(`/restaurants/detail/${restaurant.id}`)
+              }
               style={{
                 borderRadius: 20,
                 overflow: "hidden",
@@ -626,16 +684,125 @@ export default function RestaurantSection({
                 </div>
                 <div
                   className="meta"
-                  style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
+                  style={{
+                    marginTop: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
                 >
-                  {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분 · 리뷰 ${restaurant.reviewCount ?? 0}개`}
+                  <div
+                    className="meta"
+                    style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
+                  >
+                    {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분 · 리뷰 ${restaurant.reviewCount ?? 0}개`}
+                  </div>
+                  {todaySelectionCount > 0 ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        minWidth: 0,
+                        flex: 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          paddingLeft: 2,
+                        }}
+                      >
+                        {Array.from({ length: avatarCount }).map((_, index) => {
+                          const colorIndex =
+                            (restaurant.id + index) % AVATAR_COLORS.length;
+                          const animalIndex =
+                            (restaurant.id * 7 + index * 3) %
+                            AVATAR_ANIMALS.length;
+                          return (
+                            <div
+                              key={`${restaurant.id}-avatar-${index}`}
+                              aria-hidden
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: "9999px",
+                                marginLeft: index === 0 ? 0 : -8,
+                                border: "1.5px solid #fff",
+                                background: AVATAR_COLORS[colorIndex],
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 12,
+                                boxShadow: "0 1px 4px rgba(15, 23, 42, 0.16)",
+                              }}
+                            >
+                              {AVATAR_ANIMALS[animalIndex]}
+                            </div>
+                          );
+                        })}
+                        {overflowCount > 0 && avatarCount > 0 && (
+                          <div
+                            aria-hidden
+                            style={{
+                              width: 22,
+                              height: 22,
+                              borderRadius: "9999px",
+                              marginLeft: -8,
+                              border: "1.5px solid #fff",
+                              background: "#f1f5f9",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#334155",
+                              fontSize: 10,
+                              fontWeight: 900,
+                              boxShadow: "0 1px 4px rgba(15, 23, 42, 0.16)",
+                            }}
+                          >
+                            +{overflowCount}
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 800,
+                          color: "#c2410c",
+                          whiteSpace: "nowrap",
+                          marginLeft: "auto",
+                          paddingRight: RIGHT_LABEL_PADDING,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {`${todaySelectionCount}명 선택`}
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: "var(--muted, #6b7280)",
+                        whiteSpace: "nowrap",
+                        marginLeft: "auto",
+                        paddingRight: RIGHT_LABEL_PADDING,
+                        flexShrink: 0,
+                      }}
+                    >
+                      0명 선택
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           );
         })}
 
-        {hasMore && <div ref={loadMoreRef} style={{ gridColumn: "1 / -1", height: 1 }} />}
+        {hasMore && (
+          <div ref={loadMoreRef} style={{ gridColumn: "1 / -1", height: 1 }} />
+        )}
         {loadingMore && (
           <div
             style={{

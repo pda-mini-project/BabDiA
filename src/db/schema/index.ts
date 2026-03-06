@@ -4,6 +4,7 @@ export { babdiaSchema } from "./base-schema";
 export { user, session, account, verification } from "./auth.schema";
 export { restaurants } from "./restaurant.schema";
 export { reviews } from "./review.schema";
+export { dailyRestaurantSelections } from "./daily-selection.schema";
 export {
   tagCategories,
   tags,
@@ -13,6 +14,7 @@ export {
 import { user, session, account } from "./auth.schema";
 import { restaurants } from "./restaurant.schema";
 import { reviews } from "./review.schema";
+import { dailyRestaurantSelections } from "./daily-selection.schema";
 import {
   tagCategories,
   tags,
@@ -24,12 +26,14 @@ export const userRelations = relations(user, ({ many }) => ({
   reviews: many(reviews),
   sessions: many(session),
   accounts: many(account),
+  dailyRestaurantSelections: many(dailyRestaurantSelections),
 }));
 
 
 export const restaurantsRelations = relations(restaurants, ({ many }) => ({
   reviews: many(reviews),
   restaurantTags: many(restaurantTags),
+  dailyRestaurantSelections: many(dailyRestaurantSelections),
 }));
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({
@@ -50,3 +54,11 @@ export const restaurantTagsRelations = relations(restaurantTags, ({ one }) => ({
   restaurant: one(restaurants),
   tag: one(tags),
 }));
+
+export const dailyRestaurantSelectionsRelations = relations(
+  dailyRestaurantSelections,
+  ({ one }) => ({
+    user: one(user),
+    restaurant: one(restaurants),
+  }),
+);
