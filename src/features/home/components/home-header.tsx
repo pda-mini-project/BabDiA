@@ -26,7 +26,7 @@ export default function HomeHeader() {
         gap: 16,
       }}
     >
-      <div className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
+      <div className="page-title">
         오늘 뭐 먹지? 🎲
       </div>
 

@@ -236,11 +236,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
+    padding: 14px max(20px, calc((100% - 800px) / 2));
     border-bottom: 1px solid var(--line);
     background: #fff;
     position: sticky;
     top: 0;
     z-index: 20;
+  }
+
+  .main {
+    justify-content: flex-start;
   }
 }

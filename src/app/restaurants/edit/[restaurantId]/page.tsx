@@ -21,7 +21,7 @@ export default async function EditRestaurantPage({
 
   return (
     <AppShell>
-      <div style={{ maxWidth: 720, margin: "0 auto", width: "100%" }}>
+      <div style={{ maxWidth: 800, margin: "0 auto", width: "100%" }}>
         <h1 className="page-title">식당 수정</h1>
         <p className="page-sub">기존 정보를 수정할 수 있습니다.</p>
       </div>
