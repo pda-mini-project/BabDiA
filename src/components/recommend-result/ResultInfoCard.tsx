@@ -31,7 +31,7 @@ export default function ResultInfoCard({
         <span className={styles.infoVal}>{restaurant.solo ?? "-"}</span>
       </div>
       <div className={styles.infoRow}>
-        <span className={styles.infoKey}>횡단보도</span>
+        <span className={styles.infoKey}>신호등</span>
         <span className={styles.infoVal}>
           {restaurant.crosswalk ?? "-"}
         </span>

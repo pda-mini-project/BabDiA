@@ -1,11 +1,11 @@
 /**
  * 점메추 화면 필터 태그 → DB 조건 매핑
- * (restaurants/new에서 저장한 태그: 국물, 밥, 면, 혼밥가능, 웨이팅X, 매움, 횡단보도X)
+ * (restaurants/new에서 저장한 태그: 국물, 밥, 면, 혼밥가능, 웨이팅X, 매움, 신호등X)
  *
  * 동작 원칙:
  * - 필터를 고르지 않음 → 해당 차원은 조건 없음(전부 후보). 예: 맵기 미선택 시 매운/안 매운 모두 후보.
  * - "있어도 됨"(웨이팅) → 웨이팅 유무 상관없이 전부 후보.
- * - "횡단보도_상관없음" → 횡단보도 있음/없음 전부 후보.
+ * - "신호등_상관없음" → 신호등 있음/없음 전부 후보.
  * - "거리_상관없음" / "가격_상관없음" → 도보·가격 조건 없음.
  */
 
@@ -29,7 +29,7 @@ const TAG_REQUIRE: Record<string, string> = {
   매운: "매움",
   가능: "혼밥가능", // 혼밥 필터
   "없을 선호": "웨이팅X",
-  "없어야 함": "횡단보도X",
+  "없어야 함": "신호등X",
 };
 
 const TAG_EXCLUDE: Record<string, string> = {
@@ -93,7 +93,7 @@ export function parseRecommendTags(tagStrings: string[]): RecommendFilterConditi
 
   // "상관없음" / "있어도 됨" → 해당 차원은 필터 없음 (전부 후보)
   const hasWaitingOk = tagStrings.some((t) => t?.trim() === "있어도 됨");
-  const hasCrosswalkAny = tagStrings.some((t) => t?.trim() === "횡단보도_상관없음");
+  const hasCrosswalkAny = tagStrings.some((t) => t?.trim() === "신호등_상관없음");
   const hasDistanceAny = tagStrings.some((t) => t?.trim() === "거리_상관없음");
   const hasPriceAny = tagStrings.some((t) => t?.trim() === "가격_상관없음");
   const hasCategoryAny = tagStrings.some((t) => t?.trim() === "음식종류_상관없음");
@@ -105,7 +105,7 @@ export function parseRecommendTags(tagStrings: string[]): RecommendFilterConditi
     if (idx !== -1) requireTags.splice(idx, 1);
   }
   if (hasCrosswalkAny) {
-    const idx = requireTags.indexOf("횡단보도X");
+    const idx = requireTags.indexOf("신호등X");
     if (idx !== -1) requireTags.splice(idx, 1);
   }
   if (hasDistanceAny) maxWalkingMinutes = null;

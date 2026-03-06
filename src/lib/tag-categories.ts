@@ -1,5 +1,5 @@
 /**
- * 태그 카테고리: 거리, 국물, 밥, 면, 음식 종류, 가격, 횡단보도, 맵기, 혼밥, 웨이팅
+ * 태그 카테고리: 거리, 국물, 밥, 면, 음식 종류, 가격, 신호등, 맵기, 혼밥, 웨이팅
  * 식당 추가·점메추 API에서 공통 사용
  */
 
@@ -41,8 +41,8 @@ export const TAG_NAME_TO_CATEGORY_CODE: Record<string, TagCategoryCode> = {
   "10,000원 이하": "price",
   "13,000원 이하": "price",
   "13,000원 초과": "price",
-  // 횡단보도
-  횡단보도X: "crosswalk",
+  // 신호등
+  신호등X: "crosswalk",
   "없어야 함": "crosswalk",
   // 맵기
   매움: "spicy",
@@ -71,7 +71,7 @@ export const TAG_CATEGORIES_SEED: { name: string; code: TagCategoryCode }[] = [
   { name: "면", code: "noodle" },
   { name: "음식 종류", code: "cuisine" },
   { name: "가격", code: "price" },
-  { name: "횡단보도", code: "crosswalk" },
+  { name: "신호등", code: "crosswalk" },
   { name: "맵기", code: "spicy" },
   { name: "혼밥", code: "solo" },
   { name: "웨이팅", code: "waiting" },
