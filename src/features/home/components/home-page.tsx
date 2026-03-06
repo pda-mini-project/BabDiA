@@ -1,4 +1,9 @@
-import { getHomeRestaurantsPage, type HomeMealType, type HomeSort } from "@/data/home-restaurants";
+import {
+  getHomeRestaurantsCount,
+  getHomeRestaurantsPage,
+  type HomeMealType,
+  type HomeSort,
+} from "@/data/home-restaurants";
 import AppShell from "@/components/layouts/app-shell";
 import HomeHeader from "./home-header";
 import HeroSection from "./hero-section";
@@ -42,15 +47,23 @@ export default async function HomePage({
 }: HomePageProps) {
   const safeSort = toHomeSort(sortBy);
   const safeMealType = toHomeMealType(mealType);
-  const restaurantList = await getHomeRestaurantsPage({
-    searchQuery,
-    sortBy: safeSort,
-    minRating,
-    maxWalking,
-    mealType: safeMealType,
-    limit: HOME_PAGE_SIZE,
-    offset: 0,
-  });
+  const [restaurantList, totalCount] = await Promise.all([
+    getHomeRestaurantsPage({
+      searchQuery,
+      sortBy: safeSort,
+      minRating,
+      maxWalking,
+      mealType: safeMealType,
+      limit: HOME_PAGE_SIZE,
+      offset: 0,
+    }),
+    getHomeRestaurantsCount({
+      searchQuery,
+      minRating,
+      maxWalking,
+      mealType: safeMealType,
+    }),
+  ]);
 
   return (
     <AppShell>
@@ -64,6 +77,7 @@ export default async function HomePage({
         maxWalking={maxWalking}
         mealType={safeMealType}
         pageSize={HOME_PAGE_SIZE}
+        totalCount={totalCount}
       />
     </AppShell>
   );

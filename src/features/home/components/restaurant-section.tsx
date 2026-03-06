@@ -30,6 +30,8 @@ type RestaurantSectionProps = {
   maxWalking: number;
   mealType: "all" | "soup" | "rice" | "noodle" | "rice_noodle";
   pageSize?: number;
+  /** 서버에서 넘겨준 전체 식당 수 (스크롤 전에도 전체 N건 표시용) */
+  totalCount?: number;
 };
 
 export default function RestaurantSection({
@@ -40,6 +42,7 @@ export default function RestaurantSection({
   maxWalking,
   mealType,
   pageSize = 20,
+  totalCount,
 }: RestaurantSectionProps) {
   const [fetchedImages, setFetchedImages] = useState<Record<number, string>>({});
   const [keyword, setKeyword] = useState(searchKeyword);
@@ -135,9 +138,14 @@ export default function RestaurantSection({
     minRating > 0 ? `평점 ${minRating} 이상` : null,
     maxWalking > 0 ? `도보 ${maxWalking}분 이내` : null,
   ].filter((item): item is string => item !== null);
-  const resultCountLabel = hasFilter
-    ? `검색/필터 결과 ${displayList.length}${hasMore ? "+" : ""}건`
-    : `전체 ${displayList.length}${hasMore ? "+" : ""}건`;
+  const resultCountLabel =
+    totalCount != null
+      ? hasFilter
+        ? `검색/필터 결과 ${totalCount}건`
+        : `전체 ${totalCount}건`
+      : hasFilter
+        ? `검색/필터 결과 ${displayList.length}${hasMore ? "+" : ""}건`
+        : `전체 ${displayList.length}${hasMore ? "+" : ""}건`;
 
   const highlightedName = (name: string) => {
     if (!hasSearchKeyword) return name;
