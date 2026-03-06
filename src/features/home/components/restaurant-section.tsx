@@ -21,6 +21,7 @@ type HomeRestaurant = {
   imageUrl: string | null;
   naverLink: string | null;
   reviewCount: number;
+  todaySelectionCount: number;
 };
 
 type RestaurantSectionProps = {
@@ -629,6 +630,20 @@ export default function RestaurantSection({
                   style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
                 >
                   {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분 · 리뷰 ${restaurant.reviewCount ?? 0}개`}
+                </div>
+                <div
+                  className="meta"
+                  style={{
+                    marginTop: 6,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color:
+                      restaurant.todaySelectionCount > 0
+                        ? "#c2410c"
+                        : "var(--muted, #6b7280)",
+                  }}
+                >
+                  {`오늘 선택 ${restaurant.todaySelectionCount}명`}
                 </div>
               </div>
             </div>

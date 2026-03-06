@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AppShell from "@/components/layouts/app-shell";
 import ResultCard from "@/components/recommend-result/ResultCard";
 import ResultActions from "@/components/recommend-result/ResultActions";
@@ -18,6 +18,8 @@ const REROLL_DURATION_MS = 1200;
 const SLOT_INTERVAL_MS = 120;
 
 export default function RecommendResultContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const sp = useSearchParams();
   const tagParams = useMemo(() => sp.getAll("tag"), [sp]);
   const preset = sp.get("preset");
@@ -30,6 +32,8 @@ export default function RecommendResultContent() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isRerolling, setIsRerolling] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectStatus, setSelectStatus] = useState<string | null>(null);
   const [slotEmojiIndex, setSlotEmojiIndex] = useState(0);
   const [cardKey, setCardKey] = useState(0);
 
@@ -107,6 +111,7 @@ export default function RecommendResultContent() {
   }, [isRerolling]);
 
   const handleReroll = useCallback(() => {
+    setSelectStatus(null);
     setIsRerolling(true);
     setTimeout(() => {
       setCurrent((prev) =>
@@ -116,6 +121,10 @@ export default function RecommendResultContent() {
       setIsRerolling(false);
     }, REROLL_DURATION_MS);
   }, [list]);
+
+  useEffect(() => {
+    setSelectStatus(null);
+  }, [current?.id]);
 
   const handleNaverMap = useCallback(() => {
     if (!current) return;
@@ -136,6 +145,45 @@ export default function RecommendResultContent() {
     if (!current) return;
     setDetailRestaurantId(current.id);
   }, [current]);
+
+  const handleSelectRestaurant = useCallback(async () => {
+    if (!current || isSelecting) return;
+    setIsSelecting(true);
+    setSelectStatus(null);
+    try {
+      const response = await fetch("/api/recommend/selection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restaurantId: Number(current.id) }),
+      });
+
+      if (response.status === 401) {
+        const qs = sp.toString();
+        const redirect = `${pathname}${qs ? `?${qs}` : ""}`;
+        router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+        return;
+      }
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        setSelectStatus(data?.error || "저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+
+      setSelectStatus("오늘 점심 식당으로 저장했어요.");
+    } catch (error) {
+      console.error("[recommend selection]", error);
+      setSelectStatus(
+        error instanceof Error
+          ? error.message
+          : "저장에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+      );
+    } finally {
+      setIsSelecting(false);
+    }
+  }, [current, isSelecting, pathname, router, sp]);
 
   if (loading) {
     return (
@@ -193,7 +241,14 @@ export default function RecommendResultContent() {
               onReroll={handleReroll}
               onNaverMap={handleNaverMap}
               onDetail={handleDetail}
+              onSelectRestaurant={handleSelectRestaurant}
+              isSelecting={isSelecting}
             />
+            {selectStatus && (
+              <p style={{ marginTop: 8, color: "var(--muted, #6b7280)", fontWeight: 700 }}>
+                {selectStatus}
+              </p>
+            )}
           </div>
         </div>
       </div>

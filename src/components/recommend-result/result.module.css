@@ -164,7 +164,7 @@
 /* 액션 버튼 */
 .actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -183,6 +183,10 @@
   font-weight: 800;
   transition: all 0.15s;
   background: transparent;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btnIcon {
@@ -211,6 +215,14 @@
 }
 .btnDetail:hover {
   background: #e0e7ff;
+}
+
+.btnPick {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.btnPick:hover {
+  background: #ffedd5;
 }
 
 /* 상세 정보 카드 */
