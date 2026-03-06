@@ -20,6 +20,7 @@ type HomeRestaurant = {
   walkingMinutes: number | null;
   imageUrl: string | null;
   naverLink: string | null;
+  reviewCount: number;
 };
 
 type RestaurantSectionProps = {
@@ -627,7 +628,7 @@ export default function RestaurantSection({
                   className="meta"
                   style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
                 >
-                  {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분`}
+                  {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분 · 리뷰 ${restaurant.reviewCount ?? 0}개`}
                 </div>
               </div>
             </div>
