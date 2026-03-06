@@ -1,5 +1,5 @@
 import { db } from "@/db/client";
-import { restaurants, restaurantTags, tags } from "@/db/schema";
+import { restaurants, restaurantTags, tags, reviews } from "@/db/schema";
 import { and, desc, ilike, sql, type SQL } from "drizzle-orm";
 
 export type HomeSort = "latest" | "rating_desc" | "walking_asc";
@@ -12,6 +12,7 @@ export type HomeRestaurantRow = {
   walkingMinutes: number | null;
   imageUrl: string | null;
   naverLink: string | null;
+  reviewCount: number;
 };
 
 export type GetHomeRestaurantsOptions = {
@@ -107,6 +108,9 @@ export async function getHomeRestaurantsPage(
       walkingMinutes: restaurants.walkingMinutes,
       imageUrl: restaurants.imageUrl,
       naverLink: restaurants.naverLink,
+      reviewCount: sql<number>`(select count(*)::int from ${reviews} where ${reviews.restaurantId} = ${restaurants.id})`.as(
+        "reviewCount",
+      ),
     };
 
     if (sortBy === "rating_desc") {
