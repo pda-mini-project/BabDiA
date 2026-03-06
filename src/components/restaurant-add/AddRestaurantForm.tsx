@@ -6,8 +6,10 @@ import {
   CATEGORIES,
   PRICE_RANGES,
   ADD_RESTAURANT_TAGS,
+  SOUP_TAG_OPTIONS,
   getInitialFormState,
   type AddRestaurantFormState,
+  type SoupOption,
 } from "@/lib/restaurant-form";
 import styles from "./add-restaurant.module.css";
 
@@ -54,7 +56,10 @@ export default function AddRestaurantForm() {
             priceRange: form.priceRange,
             walkMinutes: form.walkMinutes,
             naverLink: form.naverLink,
-            selectedTags: Array.from(form.selectedTags),
+            selectedTags: [
+              ...(form.soupOption ? [form.soupOption] : []),
+              ...Array.from(form.selectedTags),
+            ],
             recommendMenu: form.recommendMenu,
             locationText: form.locationText,
           }),
@@ -161,6 +166,25 @@ export default function AddRestaurantForm() {
           </div>
         </div>
 
+        <div className={styles.field}>
+          <span className={styles.label}>국물 (하나만 선택)</span>
+          <div className={styles.chips}>
+            {SOUP_TAG_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`${styles.chip} ${form.soupOption === opt.value ? styles.chipActive : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="soupOption"
+                  checked={form.soupOption === opt.value}
+                  onChange={() => update("soupOption", opt.value as SoupOption)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
         <div className={styles.field}>
           <span className={styles.label}>태그 (복수 선택)</span>
           <div className={styles.chips}>

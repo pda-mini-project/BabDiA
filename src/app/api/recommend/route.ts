@@ -103,6 +103,15 @@ export async function GET(request: Request) {
       allowedIds = new Set([...allowedIds].filter((id) => idsWithTag.has(id)));
     }
 
+    for (const tagGroup of condition.requireAnyOf ?? []) {
+      const idsWithAny = new Set(
+        tagRows
+          .filter((row) => tagGroup.includes(row.tagName))
+          .map((row) => row.restaurantId),
+      );
+      allowedIds = new Set([...allowedIds].filter((id) => idsWithAny.has(id)));
+    }
+
     for (const tagName of condition.excludeTags) {
       const idsWithTag = new Set(
         tagRows.filter((row) => row.tagName === tagName).map((row) => row.restaurantId),
