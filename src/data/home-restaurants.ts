@@ -1,6 +1,12 @@
 import { db } from "@/db/client";
-import { restaurants, restaurantTags, tags } from "@/db/schema";
-import { and, desc, ilike, sql, type SQL } from "drizzle-orm";
+import {
+  dailyRestaurantSelections,
+  restaurants,
+  reviews,
+  restaurantTags,
+  tags,
+} from "@/db/schema";
+import { and, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
 
 export type HomeSort = "latest" | "rating_desc" | "walking_asc";
 export type HomeMealType = "all" | "soup" | "rice" | "noodle" | "rice_noodle";
@@ -12,6 +18,8 @@ export type HomeRestaurantRow = {
   walkingMinutes: number | null;
   imageUrl: string | null;
   naverLink: string | null;
+  reviewCount: number;
+  todaySelectionCount: number;
 };
 
 export type GetHomeRestaurantsOptions = {
@@ -65,6 +73,15 @@ export async function getHomeRestaurantsPage(
       .as("today_selection_counts");
 
     const todaySelectionCountExpr = sql<number>`coalesce(${todaySelectionCounts.todaySelectionCount}, 0)`;
+    const reviewCountSubquery = db
+      .select({
+        restaurantId: reviews.restaurantId,
+        reviewCount: sql<number>`count(*)::int`.as("review_count"),
+      })
+      .from(reviews)
+      .groupBy(reviews.restaurantId)
+      .as("review_counts");
+    const reviewCountExpr = sql<number>`coalesce(${reviewCountSubquery.reviewCount}, 0)`;
     const selectedPriorityExpr = sql<number>`case
       when ${todaySelectionCountExpr} > 0 then 0
       else 1
@@ -120,15 +137,6 @@ export async function getHomeRestaurantsPage(
           ? filters[0]
           : and(...filters);
 
-    const reviewCountSubquery = db
-      .select({
-        restaurantId: reviews.restaurantId,
-        reviewCount: sql<number>`count(*)::int`.as("reviewCount"),
-      })
-      .from(reviews)
-      .groupBy(reviews.restaurantId)
-      .as("review_counts");
-
     const selectFields = {
       id: restaurants.id,
       name: restaurants.name,
@@ -136,18 +144,23 @@ export async function getHomeRestaurantsPage(
       walkingMinutes: restaurants.walkingMinutes,
       imageUrl: restaurants.imageUrl,
       naverLink: restaurants.naverLink,
+      reviewCount: reviewCountExpr,
+      todaySelectionCount: todaySelectionCountExpr,
     };
-
-    const baseFrom = db
-      .select(selectFields)
-      .from(restaurants)
-      .leftJoin(reviewCountSubquery, eq(restaurants.id, reviewCountSubquery.restaurantId));
 
     if (sortBy === "rating_desc") {
       if (whereClause) {
         return await db
           .select(selectFields)
           .from(restaurants)
+          .leftJoin(
+            todaySelectionCounts,
+            eq(todaySelectionCounts.restaurantId, restaurants.id),
+          )
+          .leftJoin(
+            reviewCountSubquery,
+            eq(reviewCountSubquery.restaurantId, restaurants.id),
+          )
           .where(whereClause)
           .orderBy(
             selectedPriorityExpr,
@@ -162,7 +175,21 @@ export async function getHomeRestaurantsPage(
       return await db
         .select(selectFields)
         .from(restaurants)
-        .orderBy(sql`${restaurants.rating} desc nulls last`, desc(restaurants.createdAt))
+        .leftJoin(
+          todaySelectionCounts,
+          eq(todaySelectionCounts.restaurantId, restaurants.id),
+        )
+        .leftJoin(
+          reviewCountSubquery,
+          eq(reviewCountSubquery.restaurantId, restaurants.id),
+        )
+        .orderBy(
+          selectedPriorityExpr,
+          sql`${todaySelectionCountExpr} desc`,
+          sql`${restaurants.rating} desc nulls last`,
+          desc(restaurants.createdAt),
+          desc(restaurants.id),
+        )
         .limit(limit)
         .offset(offset);
     }
@@ -172,6 +199,14 @@ export async function getHomeRestaurantsPage(
         return await db
           .select(selectFields)
           .from(restaurants)
+          .leftJoin(
+            todaySelectionCounts,
+            eq(todaySelectionCounts.restaurantId, restaurants.id),
+          )
+          .leftJoin(
+            reviewCountSubquery,
+            eq(reviewCountSubquery.restaurantId, restaurants.id),
+          )
           .where(whereClause)
           .orderBy(
             selectedPriorityExpr,
@@ -186,7 +221,21 @@ export async function getHomeRestaurantsPage(
       return await db
         .select(selectFields)
         .from(restaurants)
-        .orderBy(sql`${restaurants.walkingMinutes} asc nulls last`, desc(restaurants.createdAt))
+        .leftJoin(
+          todaySelectionCounts,
+          eq(todaySelectionCounts.restaurantId, restaurants.id),
+        )
+        .leftJoin(
+          reviewCountSubquery,
+          eq(reviewCountSubquery.restaurantId, restaurants.id),
+        )
+        .orderBy(
+          selectedPriorityExpr,
+          sql`${todaySelectionCountExpr} desc`,
+          sql`${restaurants.walkingMinutes} asc nulls last`,
+          desc(restaurants.createdAt),
+          desc(restaurants.id),
+        )
         .limit(limit)
         .offset(offset);
     }
@@ -195,6 +244,14 @@ export async function getHomeRestaurantsPage(
       return await db
         .select(selectFields)
         .from(restaurants)
+        .leftJoin(
+          todaySelectionCounts,
+          eq(todaySelectionCounts.restaurantId, restaurants.id),
+        )
+        .leftJoin(
+          reviewCountSubquery,
+          eq(reviewCountSubquery.restaurantId, restaurants.id),
+        )
         .where(whereClause)
         .orderBy(
           selectedPriorityExpr,
@@ -209,7 +266,20 @@ export async function getHomeRestaurantsPage(
     return await db
       .select(selectFields)
       .from(restaurants)
-      .orderBy(desc(restaurants.createdAt), desc(restaurants.id))
+      .leftJoin(
+        todaySelectionCounts,
+        eq(todaySelectionCounts.restaurantId, restaurants.id),
+      )
+      .leftJoin(
+        reviewCountSubquery,
+        eq(reviewCountSubquery.restaurantId, restaurants.id),
+      )
+      .orderBy(
+        selectedPriorityExpr,
+        sql`${todaySelectionCountExpr} desc`,
+        desc(restaurants.createdAt),
+        desc(restaurants.id),
+      )
       .limit(limit)
       .offset(offset);
   } catch (error) {
@@ -305,6 +375,7 @@ async function getHomeRestaurantsPageWithoutSelection(
     walkingMinutes: restaurants.walkingMinutes,
     imageUrl: restaurants.imageUrl,
     naverLink: restaurants.naverLink,
+    reviewCount: sql<number>`0`.as("review_count"),
     todaySelectionCount: sql<number>`0`.as("today_selection_count"),
   };
 

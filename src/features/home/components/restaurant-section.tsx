@@ -37,8 +37,9 @@ type RestaurantSectionProps = {
 };
 
 function getResponsiveMaxAvatarCount(width: number) {
-  if (width < 550) return 0;
-  if (width < 640) return 2;
+  console.log(width)
+  if (width < 695) return 0;
+  if (width < 750) return 2;
   if (width < 900) return 5;
   if (width < 1200) return 6;
   if (width < 1536) return 7;
@@ -683,12 +684,6 @@ export default function RestaurantSection({
                 </div>
                 <div
                   className="meta"
-                  style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
-                >
-                  {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분 · 리뷰 ${restaurant.reviewCount ?? 0}개`}
-                </div>
-                <div
-                  className="meta"
                   style={{
                     marginTop: 2,
                     display: "flex",
@@ -700,7 +695,7 @@ export default function RestaurantSection({
                     className="meta"
                     style={{ fontSize: 13, color: "var(--muted, #6b7280)" }}
                   >
-                    {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분`}
+                    {`⭐ ${restaurant.rating ?? "-"} · 도보 ${restaurant.walkingMinutes ?? "-"}분 · 리뷰 ${restaurant.reviewCount ?? 0}개`}
                   </div>
                   {todaySelectionCount > 0 ? (
                     <div
