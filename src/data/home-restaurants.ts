@@ -1,6 +1,6 @@
 import { db } from "@/db/client";
 import { restaurants, restaurantTags, tags, reviews } from "@/db/schema";
-import { and, desc, ilike, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
 
 export type HomeSort = "latest" | "rating_desc" | "walking_asc";
 export type HomeMealType = "all" | "soup" | "rice" | "noodle" | "rice_noodle";
@@ -101,6 +101,15 @@ export async function getHomeRestaurantsPage(
           ? filters[0]
           : and(...filters);
 
+    const reviewCountSubquery = db
+      .select({
+        restaurantId: reviews.restaurantId,
+        reviewCount: sql<number>`count(*)::int`.as("reviewCount"),
+      })
+      .from(reviews)
+      .groupBy(reviews.restaurantId)
+      .as("review_counts");
+
     const selectFields = {
       id: restaurants.id,
       name: restaurants.name,
@@ -108,24 +117,25 @@ export async function getHomeRestaurantsPage(
       walkingMinutes: restaurants.walkingMinutes,
       imageUrl: restaurants.imageUrl,
       naverLink: restaurants.naverLink,
-      reviewCount: sql<number>`(select count(*)::int from ${reviews} where ${reviews.restaurantId} = ${restaurants.id})`.as(
+      reviewCount: sql<number>`coalesce(${reviewCountSubquery.reviewCount}, 0)::int`.as(
         "reviewCount",
       ),
     };
 
+    const baseFrom = db
+      .select(selectFields)
+      .from(restaurants)
+      .leftJoin(reviewCountSubquery, eq(restaurants.id, reviewCountSubquery.restaurantId));
+
     if (sortBy === "rating_desc") {
       if (whereClause) {
-        return await db
-          .select(selectFields)
-          .from(restaurants)
+        return await baseFrom
           .where(whereClause)
           .orderBy(sql`${restaurants.rating} desc nulls last`, desc(restaurants.createdAt))
           .limit(limit)
           .offset(offset);
       }
-      return await db
-        .select(selectFields)
-        .from(restaurants)
+      return await baseFrom
         .orderBy(sql`${restaurants.rating} desc nulls last`, desc(restaurants.createdAt))
         .limit(limit)
         .offset(offset);
@@ -133,35 +143,27 @@ export async function getHomeRestaurantsPage(
 
     if (sortBy === "walking_asc") {
       if (whereClause) {
-        return await db
-          .select(selectFields)
-          .from(restaurants)
+        return await baseFrom
           .where(whereClause)
           .orderBy(sql`${restaurants.walkingMinutes} asc nulls last`, desc(restaurants.createdAt))
           .limit(limit)
           .offset(offset);
       }
-      return await db
-        .select(selectFields)
-        .from(restaurants)
+      return await baseFrom
         .orderBy(sql`${restaurants.walkingMinutes} asc nulls last`, desc(restaurants.createdAt))
         .limit(limit)
         .offset(offset);
     }
 
     if (whereClause) {
-      return await db
-        .select(selectFields)
-        .from(restaurants)
+      return await baseFrom
         .where(whereClause)
         .orderBy(desc(restaurants.createdAt))
         .limit(limit)
         .offset(offset);
     }
 
-    return await db
-      .select(selectFields)
-      .from(restaurants)
+    return await baseFrom
       .orderBy(desc(restaurants.createdAt), desc(restaurants.id))
       .limit(limit)
       .offset(offset);
