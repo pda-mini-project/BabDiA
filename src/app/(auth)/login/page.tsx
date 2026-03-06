@@ -1,7 +1,12 @@
 import AppShell from "@/components/layouts/app-shell";
 import AuthCard from "@/features/auth/components/auth-card";
+import { resolveRedirect, RedirectSearchParams } from "@/lib/auth/redirect";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams?: RedirectSearchParams;
+};
+
+export default function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AppShell>
       <div className="flex flex-col items-center">
@@ -14,7 +19,7 @@ export default function LoginPage() {
           </p>
         </header>
 
-        <AuthCard defaultTab="login" />
+        <AuthCard defaultTab="login" redirect={resolveRedirect(searchParams)} />
       </div>
     </AppShell>
   );

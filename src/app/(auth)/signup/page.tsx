@@ -1,7 +1,12 @@
 import AppShell from "@/components/layouts/app-shell";
 import AuthCard from "@/features/auth/components/auth-card";
+import { resolveRedirect, RedirectSearchParams } from "@/lib/auth/redirect";
 
-export default function SignupPage() {
+type SignupPageProps = {
+  searchParams?: RedirectSearchParams;
+};
+
+export default function SignupPage({ searchParams }: SignupPageProps) {
   return (
     <AppShell>
       <div className="flex flex-col items-center">
@@ -14,7 +19,10 @@ export default function SignupPage() {
           </p>
         </header>
 
-        <AuthCard defaultTab="signup" />
+        <AuthCard
+          defaultTab="signup"
+          redirect={resolveRedirect(searchParams)}
+        />
       </div>
     </AppShell>
   );

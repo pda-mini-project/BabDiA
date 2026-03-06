@@ -1,8 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import type { RestaurantDetailRecord } from "@/data/restaurant-details";
 import styles from "./RestaurantDetail.module.css";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { authClient } from "@/lib/auth/auth-client";
 
 const blankForm = {
   rating: "",
@@ -26,6 +34,14 @@ export default function RestaurantDetailView({
   restaurant,
   restaurantId,
 }: RestaurantDetailViewProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
+  const { data: session } = authClient.useSession();
+  const isLoggedIn = Boolean(session?.user);
+  const reviewIntent = searchParams.get("reviewIntent");
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [formState, setFormState] = useState(blankForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
@@ -79,6 +95,17 @@ export default function RestaurantDetailView({
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (!isLoggedIn) {
+        alert("로그인을 해주세요.");
+        const redirectParams = new URLSearchParams(searchParamsString);
+        redirectParams.set("reviewIntent", "1");
+        const redirectQuery = redirectParams.toString();
+        const redirectUrl = `${pathname}${
+          redirectQuery ? `?${redirectQuery}` : ""
+        }`;
+        router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+        return;
+      }
 
       if (!restaurantId || !formState.rating || !formState.comment) {
         alert("필수 항목을 입력해주세요.");
@@ -112,8 +139,36 @@ export default function RestaurantDetailView({
         setIsSubmitting(false);
       }
     },
-    [restaurantId, formState.rating, formState.comment, formState.menu],
+    [
+      restaurantId,
+      formState.rating,
+      formState.comment,
+      formState.menu,
+      isLoggedIn,
+      pathname,
+      router,
+      searchParamsString,
+    ],
   );
+
+  useEffect(() => {
+    if (reviewIntent !== "1" || !formRef.current) {
+      return;
+    }
+
+    formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    const firstInput = formRef.current.querySelector<HTMLElement>(
+      "input, textarea",
+    );
+    firstInput?.focus();
+
+    const redirectParams = new URLSearchParams(searchParamsString);
+    redirectParams.delete("reviewIntent");
+    const nextSearch = redirectParams.toString();
+    router.replace(`${pathname}${nextSearch ? `?${nextSearch}` : ""}`, {
+      scroll: false,
+    });
+  }, [pathname, router, reviewIntent, searchParamsString]);
 
   return (
     <div className={styles.page}>
@@ -171,7 +226,7 @@ export default function RestaurantDetailView({
               </div>
             </div>
 
-            <form className={styles.form} onSubmit={handleSubmit}>
+            <form ref={formRef} className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
                 <div>
                   <p className={styles.label}>평점</p>
