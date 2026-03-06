@@ -60,6 +60,8 @@ export default function RestaurantDetailView({
   );
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+  const [isSelectingRestaurant, setIsSelectingRestaurant] = useState(false);
+  const [selectionStatus, setSelectionStatus] = useState<string | null>(null);
 
   const handleChange = useCallback(
     <K extends keyof typeof blankForm>(key: K, value: string) => {
@@ -183,6 +185,51 @@ export default function RestaurantDetailView({
   );
 
   const submitText = "리뷰 등록";
+
+  const handleSelectRestaurant = useCallback(async () => {
+    if (!restaurantId || isSelectingRestaurant) return;
+
+    if (!isLoggedIn) {
+      alert("로그인을 해주세요.");
+      const redirectUrl = `${pathname}${searchParamsString ? `?${searchParamsString}` : ""}`;
+      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+      return;
+    }
+
+    setIsSelectingRestaurant(true);
+    setSelectionStatus(null);
+    try {
+      const response = await fetch("/api/recommend/selection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restaurantId: Number(restaurantId) }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        setSelectionStatus(
+          data?.error ?? "저장에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        );
+        return;
+      }
+
+      setSelectionStatus("오늘 점심 식당으로 저장했어요.");
+    } catch (error) {
+      console.error("[detail select restaurant]", error);
+      setSelectionStatus("저장에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsSelectingRestaurant(false);
+    }
+  }, [
+    isLoggedIn,
+    isSelectingRestaurant,
+    pathname,
+    restaurantId,
+    router,
+    searchParamsString,
+  ]);
 
   useEffect(() => {
     if (!restaurant.naverLink) {
@@ -335,6 +382,19 @@ export default function RestaurantDetailView({
                       </span>
                     ))}
                   </div>
+                )}
+                {restaurantId && (
+                  <button
+                    type="button"
+                    className={`${styles.btn} ${styles.btnSelectLunch}`}
+                    onClick={handleSelectRestaurant}
+                    disabled={isSelectingRestaurant}
+                  >
+                    {isSelectingRestaurant ? "저장 중..." : "이 식당에서 먹기"}
+                  </button>
+                )}
+                {selectionStatus && (
+                  <div className={styles.selectionStatus}>{selectionStatus}</div>
                 )}
                 <div className={styles.btnRow}>
                   <a

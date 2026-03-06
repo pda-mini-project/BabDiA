@@ -150,7 +150,7 @@
 .btnRow {
   display: flex;
   gap: 10px;
-  margin-top: auto;
+  margin-top: 8px;
 }
 
 .btn.btnNaver {
@@ -177,6 +177,33 @@
   background: #fff;
   color: var(--primary, #4f46e5);
   border: 1.5px solid var(--primary, #4f46e5);
+}
+
+.btn.btnSelectLunch {
+  width: 100%;
+  margin-top: 8px;
+  background-color: var(--primary, #4f46e5);
+  background-image: none;
+  color: #fff;
+  border: 1px solid var(--primary, #4f46e5);
+}
+
+.btn.btnSelectLunch:hover {
+  background-color: #4338ca;
+  color: #fff;
+  border: 1px solid #4338ca;
+}
+
+.btn.btnSelectLunch:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.selectionStatus {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .btn {
