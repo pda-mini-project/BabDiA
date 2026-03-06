@@ -85,7 +85,9 @@
 
 .resultImg {
   width: 50%;
+  height: 260px;
   min-height: 260px;
+  flex-shrink: 0;
   background: linear-gradient(135deg, #c7d2fe, #e0e7ff);
   display: flex;
   align-items: center;
