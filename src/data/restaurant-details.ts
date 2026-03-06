@@ -9,6 +9,7 @@ export type ReviewRecord = {
   menu: string;
   rating: number;
   comment: string;
+  userId: string;
 };
 
 export type InfoBlockRecord = {
@@ -50,13 +51,14 @@ export async function getRestaurantDetail(
   }
 
   const reviewRows = await db
-    .select({
-      uuid: reviews.uuid,
-      rating: reviews.rating,
-      menu: reviews.menu,
-      comment: reviews.content,
-      nickname: user.name,
-    })
+  .select({
+    uuid: reviews.uuid,
+    rating: reviews.rating,
+    menu: reviews.menu,
+    comment: reviews.content,
+    nickname: user.name,
+    userId: reviews.userId,
+  })
     .from(reviews)
     .leftJoin(user, eq(user.id, reviews.userId))
     .where(eq(reviews.restaurantId, restaurantRow.id))
@@ -123,6 +125,7 @@ export async function getRestaurantDetail(
     menu: review.menu ?? "",
     rating: review.rating ?? 0,
     comment: review.comment ?? "",
+    userId: review.userId,
   }));
 
   const tagNames = tagRows

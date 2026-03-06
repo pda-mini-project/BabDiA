@@ -203,6 +203,16 @@
     border-color 0.2s ease;
 }
 
+.btnGhost {
+  border-color: rgba(107, 114, 128, 0.4);
+  background: transparent;
+  color: var(--text);
+}
+
+.btnGhost:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
 .btnFull {
   width: 100%;
   justify-content: center;
@@ -293,6 +303,8 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+  gap: 12px;
+  align-items: center;
 }
 
 .reviewList {
@@ -309,6 +321,48 @@
   background: #fff;
   box-shadow: var(--shadow);
   min-height: 72px;
+}
+
+.reviewMeta {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.reviewActions {
+  display: flex;
+  gap: 8px;
+}
+
+.reviewButton {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.reviewButtonEdit {
+  color: var(--primary);
+  border-color: rgba(79, 70, 229, 0.4);
+}
+
+.reviewButtonEdit:hover {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.reviewButtonDelete {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.reviewButtonDelete:hover {
+  background: rgba(239, 68, 68, 0.12);
 }
 
 .reviewRow {
