@@ -7,7 +7,10 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import type { RestaurantDetailRecord } from "@/data/restaurant-details";
+import type {
+  RestaurantDetailRecord,
+  ReviewRecord,
+} from "@/data/restaurant-details";
 import styles from "./RestaurantDetail.module.css";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth/auth-client";
@@ -48,6 +51,8 @@ export default function RestaurantDetailView({
   const [placeImageUrl, setPlaceImageUrl] = useState<string | null>(
     restaurant.imageUrl,
   );
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
   const handleChange = useCallback(
     <K extends keyof typeof blankForm>(key: K, value: string) => {
@@ -55,6 +60,64 @@ export default function RestaurantDetailView({
     },
     [],
   );
+
+  const handleStartEdit = useCallback((review: ReviewRecord) => {
+    setEditingReviewId(review.id);
+    setFormState({
+      rating: review.rating.toString(),
+      menu: review.menu,
+      comment: review.comment,
+    });
+    setHoverRating(review.rating);
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingReviewId(null);
+    setFormState(blankForm);
+    setHoverRating(0);
+  }, []);
+
+  const handleDeleteReview = useCallback(
+    async (reviewId: string) => {
+      if (!restaurantId) {
+        return;
+      }
+      if (!confirm("리뷰를 삭제하면 되돌릴 수 없습니다. 계속하시겠어요?")) {
+        return;
+      }
+
+      setDeletingReviewId(reviewId);
+      try {
+        const response = await fetch("/api/reviews", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uuid: reviewId, restaurantId }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete review");
+        }
+
+        alert("리뷰가 삭제되었습니다.");
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+        alert("리뷰 삭제에 실패했습니다.");
+      } finally {
+        setDeletingReviewId(null);
+      }
+    },
+    [restaurantId],
+  );
+
+  const isEditMode = Boolean(editingReviewId);
+  const submitText = isSubmitting
+    ? isEditMode
+      ? "수정 중..."
+      : "작성 중..."
+    : isEditMode
+      ? "리뷰 수정"
+      : "리뷰 등록";
 
   useEffect(() => {
     if (!restaurant.naverLink) {
@@ -100,29 +163,40 @@ export default function RestaurantDetailView({
         const redirectParams = new URLSearchParams(searchParamsString);
         redirectParams.set("reviewIntent", "1");
         const redirectQuery = redirectParams.toString();
-        const redirectUrl = `${pathname}${
-          redirectQuery ? `?${redirectQuery}` : ""
-        }`;
+        const redirectUrl = `${pathname}${redirectQuery ? `?${redirectQuery}` : ""}`;
         router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
         return;
       }
 
       if (!restaurantId || !formState.rating || !formState.comment) {
-        alert("필수 항목을 입력해주세요.");
+        alert("모든 항목을 입력해주세요.");
         return;
       }
 
       setIsSubmitting(true);
       try {
+        const payload: {
+          restaurantId: string;
+          rating: number;
+          menu: string;
+          content: string;
+          uuid?: string;
+        } = {
+          restaurantId,
+          rating: parseInt(formState.rating, 10),
+          menu: formState.menu,
+          content: formState.comment,
+        };
+        const method = editingReviewId ? "PUT" : "POST";
+
+        if (editingReviewId) {
+          payload.uuid = editingReviewId;
+        }
+
         const response = await fetch("/api/reviews", {
-          method: "POST",
+          method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            restaurantId,
-            rating: parseInt(formState.rating),
-            menu: formState.menu,
-            content: formState.comment,
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -130,36 +204,36 @@ export default function RestaurantDetailView({
         }
 
         setFormState({ rating: "", menu: "", comment: "" });
+        setEditingReviewId(null);
         alert("후기가 등록되었습니다.");
         window.location.reload();
       } catch (error) {
         console.error(error);
-        alert("후기 등록에 실패했습니다.");
+        alert("후기 등록을 실패하였습니다.");
       } finally {
         setIsSubmitting(false);
       }
     },
     [
-      restaurantId,
-      formState.rating,
+      editingReviewId,
       formState.comment,
       formState.menu,
+      formState.rating,
       isLoggedIn,
       pathname,
+      restaurantId,
       router,
       searchParamsString,
     ],
   );
-
   useEffect(() => {
     if (reviewIntent !== "1" || !formRef.current) {
       return;
     }
 
     formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    const firstInput = formRef.current.querySelector<HTMLElement>(
-      "input, textarea",
-    );
+    const firstInput =
+      formRef.current.querySelector<HTMLElement>("input, textarea");
     firstInput?.focus();
 
     const redirectParams = new URLSearchParams(searchParamsString);
@@ -289,12 +363,22 @@ export default function RestaurantDetailView({
               </div>
 
               <div className={styles.formActions}>
+                {isEditMode && (
+                  <button
+                    type="button"
+                    className={`${styles.btn} ${styles.btnGhost}`}
+                    onClick={handleCancelEdit}
+                    disabled={isSubmitting}
+                  >
+                    취소
+                  </button>
+                )}
                 <button
                   type="submit"
                   className={`${styles.btn} ${styles.btnPrimary}`}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "등록 중..." : "등록"}
+                  {submitText}
                 </button>
               </div>
             </form>
@@ -313,9 +397,33 @@ export default function RestaurantDetailView({
                       메뉴: {review.menu}
                     </p>
                   )}
-                  <span className={styles.reviewNickname}>
-                    {review.nickname}
-                  </span>
+                  <div className={styles.reviewMeta}>
+                    <span className={styles.reviewNickname}>
+                      {review.nickname}
+                    </span>
+                    {review.userId === session?.user?.id && (
+                      <div className={styles.reviewActions}>
+                        <button
+                          type="button"
+                          className={`${styles.reviewButton} ${styles.reviewButtonEdit}`}
+                          onClick={() => handleStartEdit(review)}
+                          disabled={
+                            isSubmitting || deletingReviewId === review.id
+                          }
+                        >
+                          수정
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.reviewButton} ${styles.reviewButtonDelete}`}
+                          onClick={() => handleDeleteReview(review.id)}
+                          disabled={deletingReviewId === review.id}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
