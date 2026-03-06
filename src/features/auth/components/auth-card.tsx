@@ -61,7 +61,11 @@ export default function AuthCard({
       </div>
 
       <div className="mt-[18px]">
-        {tab === "login" ? <LoginForm redirect={redirect} /> : <SignupForm />}
+        {tab === "login" ? (
+          <LoginForm redirect={redirect} />
+        ) : (
+          <SignupForm redirect={redirect} />
+        )}
       </div>
     </div>
   );

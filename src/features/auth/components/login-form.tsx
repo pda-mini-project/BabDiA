@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth/auth-client";
 
 interface LoginFormProps {
@@ -10,6 +10,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ redirect }: LoginFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -24,7 +25,8 @@ export default function LoginForm({ redirect }: LoginFormProps) {
       setError(error.message ?? "로그인에 실패했습니다.");
       return;
     }
-    router.push(redirect ?? "/");
+    const finalRedirect = redirect ?? searchParams.get("redirect");
+    router.push(finalRedirect ?? "/");
   }
 
   return (
