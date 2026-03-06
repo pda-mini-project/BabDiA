@@ -162,7 +162,7 @@ export default function RecommendResultContent() {
               </p>
               <Link
                 href="/recommend"
-                className={styles.emptyStateBtn}
+                className="inline-block px-7 py-[14px] bg-indigo-600 text-white text-[15px] font-bold no-underline rounded-[14px] cursor-pointer hover:bg-indigo-700 transition-colors"
               >
                 점메추 페이지로 돌아가기
               </Link>
@@ -203,30 +203,29 @@ export default function RecommendResultContent() {
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className={styles.detailModalOverlay}
+            className="fixed inset-0 w-screen h-screen bg-black/50 z-[9998] flex items-center justify-center p-6 box-border"
             role="dialog"
             aria-modal="true"
             aria-label="식당 상세"
             onClick={(e) => e.target === e.currentTarget && closeDetail()}
           >
             <div
-              className={styles.detailModalBox}
+              className="bg-[#f5f5f7] rounded-[20px] max-w-[900px] w-full max-h-[90vh] flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.2)] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className={styles.detailModalHeader}>
-                <h2 className={styles.detailModalTitle}>식당 상세</h2>
+              <div className="shrink-0 flex items-center justify-end px-5 py-4 border-b border-gray-200 bg-white">
                 <button
                   type="button"
-                  className={styles.detailModalClose}
+                  className="w-9 h-9 border-0 rounded-[10px] bg-gray-100 text-lg cursor-pointer flex items-center justify-center leading-none hover:bg-gray-200 transition-colors"
                   onClick={closeDetail}
                   aria-label="닫기"
                 >
                   ✕
                 </button>
               </div>
-              <div className={styles.detailModalBody}>
+              <div className="flex-1 overflow-y-auto p-5">
                 {detailLoading && (
-                  <div className={styles.detailModalLoading}>불러오는 중...</div>
+                  <div className="py-12 px-6 text-center text-gray-500 font-semibold">불러오는 중...</div>
                 )}
                 {!detailLoading && detailData && (
                   <RestaurantDetailView
@@ -235,7 +234,7 @@ export default function RecommendResultContent() {
                   />
                 )}
                 {!detailLoading && !detailData && (
-                  <div className={styles.detailModalLoading}>
+                  <div className="py-12 px-6 text-center text-gray-500 font-semibold">
                     상세 정보를 불러오지 못했습니다.
                   </div>
                 )}
