@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -28,6 +29,7 @@ type RestaurantSectionProps = {
   minRating: number;
   maxWalking: number;
   mealType: "all" | "soup" | "rice" | "noodle" | "rice_noodle";
+  pageSize?: number;
 };
 
 export default function RestaurantSection({
@@ -37,13 +39,71 @@ export default function RestaurantSection({
   minRating,
   maxWalking,
   mealType,
+  pageSize = 20,
 }: RestaurantSectionProps) {
   const [fetchedImages, setFetchedImages] = useState<Record<number, string>>({});
   const [keyword, setKeyword] = useState(searchKeyword);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [extraRestaurants, setExtraRestaurants] = useState<HomeRestaurant[]>([]);
+  const [nextPage, setNextPage] = useState(2);
+  const [hasMore, setHasMore] = useState(restaurants.length >= pageSize);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+
+  const displayList = useMemo(
+    () => [...restaurants, ...extraRestaurants],
+    [restaurants, extraRestaurants],
+  );
+
+  const loadingMoreRef = useRef(false);
+
+  // 필터/검색 바뀌면 추가 로드 상태 초기화
+  useEffect(() => {
+    setExtraRestaurants([]);
+    setNextPage(2);
+    setHasMore(restaurants.length >= pageSize);
+    loadingMoreRef.current = false;
+  }, [restaurants, pageSize, searchKeyword, sortBy, minRating, maxWalking, mealType]);
+
+  // 스크롤 시 추가 로드 (Intersection Observer)
+  useEffect(() => {
+    if (!hasMore || loadingMore) return;
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting || loadingMoreRef.current) return;
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+        const params = new URLSearchParams({
+          page: String(nextPage),
+          sortBy,
+          searchQuery: searchKeyword,
+          minRating: String(minRating),
+          maxWalking: String(maxWalking),
+          mealType,
+        });
+        fetch(`/api/home/restaurants?${params.toString()}`)
+          .then((res) => res.json())
+          .then((data: { restaurants?: HomeRestaurant[]; hasMore?: boolean }) => {
+            const list = data.restaurants ?? [];
+            setExtraRestaurants((prev) => [...prev, ...list]);
+            setNextPage((p) => p + 1);
+            setHasMore(Boolean(data.hasMore));
+          })
+          .finally(() => {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
+          });
+      },
+      { rootMargin: "200px", threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, nextPage, searchKeyword, sortBy, minRating, maxWalking, mealType]);
 
   const trimmedSearchKeyword = searchKeyword.trim();
   const hasSearchKeyword = trimmedSearchKeyword.length > 0;
@@ -76,8 +136,8 @@ export default function RestaurantSection({
     maxWalking > 0 ? `도보 ${maxWalking}분 이내` : null,
   ].filter((item): item is string => item !== null);
   const resultCountLabel = hasFilter
-    ? `검색/필터 결과 ${restaurants.length}건`
-    : `전체 ${restaurants.length}건`;
+    ? `검색/필터 결과 ${displayList.length}${hasMore ? "+" : ""}건`
+    : `전체 ${displayList.length}${hasMore ? "+" : ""}건`;
 
   const highlightedName = (name: string) => {
     if (!hasSearchKeyword) return name;
@@ -120,7 +180,7 @@ export default function RestaurantSection({
 
   useEffect(() => {
     let isMounted = true;
-    const candidates = restaurants.filter(
+    const candidates = displayList.filter(
       (restaurant) =>
         !restaurant.imageUrl &&
         !!restaurant.naverLink &&
@@ -151,7 +211,7 @@ export default function RestaurantSection({
     return () => {
       isMounted = false;
     };
-  }, [restaurants, fetchedImages]);
+  }, [displayList, fetchedImages]);
 
   const replaceWithParams = useCallback(
     (next: {
@@ -504,7 +564,7 @@ export default function RestaurantSection({
           gap: 24,
         }}
       >
-        {restaurants.length === 0 && (
+        {displayList.length === 0 && (
           <div
             style={{
               gridColumn: "1 / -1",
@@ -522,7 +582,7 @@ export default function RestaurantSection({
           </div>
         )}
 
-        {restaurants.map((restaurant) => {
+        {displayList.map((restaurant) => {
           const imageUrl = restaurant.imageUrl ?? fetchedImages[restaurant.id] ?? null;
           return (
             <div
@@ -565,6 +625,22 @@ export default function RestaurantSection({
             </div>
           );
         })}
+
+        {hasMore && <div ref={loadMoreRef} style={{ gridColumn: "1 / -1", height: 1 }} />}
+        {loadingMore && (
+          <div
+            style={{
+              gridColumn: "1 / -1",
+              padding: 16,
+              textAlign: "center",
+              color: "var(--muted, #6b7280)",
+              fontSize: 13,
+              fontWeight: 700,
+            }}
+          >
+            더 불러오는 중...
+          </div>
+        )}
       </div>
     </section>
   );
