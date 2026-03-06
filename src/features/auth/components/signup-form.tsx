@@ -1,11 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth/auth-client";
 
-export default function SignupForm() {
+interface SignupFormProps {
+  redirect?: string | null;
+}
+
+export default function SignupForm({ redirect }: SignupFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +31,8 @@ export default function SignupForm() {
       setError(error.message ?? "회원가입에 실패했습니다.");
       return;
     }
-    router.push("/");
+    const finalRedirect = redirect ?? searchParams.get("redirect");
+    router.push(finalRedirect ?? "/");
   }
 
   return (
