@@ -150,7 +150,7 @@
 .btnRow {
   display: flex;
   gap: 10px;
-  margin-top: auto;
+  margin-top: 8px;
 }
 
 .btn.btnNaver {
