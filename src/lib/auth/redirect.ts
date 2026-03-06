@@ -2,14 +2,17 @@ export type RedirectSearchParams = {
   redirect?: string | string[] | undefined;
 };
 
-export function resolveRedirect(
-  searchParams?: RedirectSearchParams,
-): string | null {
-  if (!searchParams?.redirect) {
+type MaybePromise<T> = T | Promise<T>;
+
+export async function resolveRedirect(
+  searchParams?: MaybePromise<RedirectSearchParams | undefined>,
+): Promise<string | null> {
+  const resolved = await searchParams;
+  if (!resolved?.redirect) {
     return null;
   }
 
-  return Array.isArray(searchParams.redirect)
-    ? searchParams.redirect[0]
-    : searchParams.redirect;
+  return Array.isArray(resolved.redirect)
+    ? resolved.redirect[0]
+    : resolved.redirect;
 }
