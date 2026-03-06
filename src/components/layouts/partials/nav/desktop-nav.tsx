@@ -9,7 +9,7 @@ export default function DesktopNav() {
 
   return (
     <aside className="desktop-nav">
-      <div className="logo">🍽️ 점메추</div>
+      <Link href="/" className="logo" style={{ textDecoration: "none", color: "inherit" }}>🍽️ 밥디아</Link>
 
       <nav className="nav">
         {navItems.map((item) => (
@@ -22,12 +22,6 @@ export default function DesktopNav() {
           </Link>
         ))}
       </nav>
-
-      <div className="profile">
-        👤 프디아김
-        <br />
-        Lv.3 점심 탐험가
-      </div>
     </aside>
   );
 }
