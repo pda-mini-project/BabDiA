@@ -207,13 +207,21 @@ export default function RestaurantDetailView({
                 )}
                 <div className={styles.btnRow}>
                   <a
-                    className={`${styles.btn} ${styles.btnSoft}`}
+                    className={`${styles.btn} ${styles.btnNaver}`}
                     href={restaurant.naverLink}
                     target="_blank"
                     rel="noreferrer"
                   >
                     네이버 플레이스
                   </a>
+                  {restaurantId && (
+                    <a
+                      className={`${styles.btn} ${styles.btnEdit}`}
+                      href={`/restaurants/edit/${restaurantId}`}
+                    >
+                      식당 수정
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
