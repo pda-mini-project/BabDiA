@@ -9,8 +9,7 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "backfill:restaurant-ratings": "node scripts/backfill-restaurant-ratings.js"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.5.3",
