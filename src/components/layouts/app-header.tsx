@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import MobileNav from "./partials/nav/mobile-nav";
 
 export default function AppHeader() {
@@ -21,7 +20,7 @@ export default function AppHeader() {
   return (
     <>
       <header className="app-header">
-        <Link href="/" className="app-header-logo" style={{ textDecoration: "none", color: "inherit" }}>🍽️ 밥디아</Link>
+        <div className="app-header-logo">🍽️ 점메추</div>
         <button
           type="button"
           className="menu-btn"

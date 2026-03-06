@@ -71,13 +71,6 @@ body {
   padding: 12px;
   border-radius: 12px;
   opacity: 0.85;
-  transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
-}
-
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  opacity: 1;
-  transform: translateX(4px);
 }
 
 .nav-link {
