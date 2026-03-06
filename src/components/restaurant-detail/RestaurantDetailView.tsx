@@ -20,6 +20,11 @@ const blankForm = {
   menu: "",
   comment: "",
 };
+const blankEditForm = {
+  rating: "",
+  menu: "",
+  comment: "",
+};
 
 function renderStars(count: number) {
   const max = 5;
@@ -46,8 +51,10 @@ export default function RestaurantDetailView({
   const reviewIntent = searchParams.get("reviewIntent");
   const formRef = useRef<HTMLFormElement | null>(null);
   const [formState, setFormState] = useState(blankForm);
+  const [editFormState, setEditFormState] = useState(blankEditForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
+  const [editHoverRating, setEditHoverRating] = useState(0);
   const [placeImageUrl, setPlaceImageUrl] = useState<string | null>(
     restaurant.imageUrl,
   );
@@ -63,19 +70,84 @@ export default function RestaurantDetailView({
 
   const handleStartEdit = useCallback((review: ReviewRecord) => {
     setEditingReviewId(review.id);
-    setFormState({
+    setEditFormState({
       rating: review.rating.toString(),
       menu: review.menu,
       comment: review.comment,
     });
-    setHoverRating(review.rating);
+    setEditHoverRating(review.rating);
   }, []);
 
   const handleCancelEdit = useCallback(() => {
     setEditingReviewId(null);
-    setFormState(blankForm);
-    setHoverRating(0);
+    setEditFormState(blankEditForm);
+    setEditHoverRating(0);
   }, []);
+
+  const handleEditChange = useCallback(
+    <K extends keyof typeof blankEditForm>(key: K, value: string) => {
+      setEditFormState((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
+
+  const handleEditSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (
+        !restaurantId ||
+        !editingReviewId ||
+        !editFormState.rating ||
+        !editFormState.comment
+      ) {
+        alert("紐⑤뱺 ??ぉ???낅젰?댁＜?몄슂.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const payload: {
+          restaurantId: string;
+          rating: number;
+          menu: string;
+          content: string;
+          uuid: string;
+        } = {
+          restaurantId,
+          rating: parseInt(editFormState.rating, 10),
+          menu: editFormState.menu,
+          content: editFormState.comment,
+          uuid: editingReviewId,
+        };
+        const response = await fetch("/api/reviews", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit review");
+        }
+
+        handleCancelEdit();
+        alert("리뷰 수정이 완료되었습니다.");
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+        alert("리뷰 수정에 실패했습니다.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [
+      editFormState.comment,
+      editFormState.menu,
+      editFormState.rating,
+      editingReviewId,
+      handleCancelEdit,
+      restaurantId,
+    ],
+  );
 
   const handleDeleteReview = useCallback(
     async (reviewId: string) => {
@@ -110,14 +182,7 @@ export default function RestaurantDetailView({
     [restaurantId],
   );
 
-  const isEditMode = Boolean(editingReviewId);
-  const submitText = isSubmitting
-    ? isEditMode
-      ? "수정 중..."
-      : "작성 중..."
-    : isEditMode
-      ? "리뷰 수정"
-      : "리뷰 등록";
+  const submitText = "리뷰 등록";
 
   useEffect(() => {
     if (!restaurant.naverLink) {
@@ -180,21 +245,15 @@ export default function RestaurantDetailView({
           rating: number;
           menu: string;
           content: string;
-          uuid?: string;
         } = {
           restaurantId,
           rating: parseInt(formState.rating, 10),
           menu: formState.menu,
           content: formState.comment,
         };
-        const method = editingReviewId ? "PUT" : "POST";
-
-        if (editingReviewId) {
-          payload.uuid = editingReviewId;
-        }
 
         const response = await fetch("/api/reviews", {
-          method,
+          method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
@@ -203,8 +262,7 @@ export default function RestaurantDetailView({
           throw new Error("Failed to submit review");
         }
 
-        setFormState({ rating: "", menu: "", comment: "" });
-        setEditingReviewId(null);
+        setFormState(blankForm);
         alert("후기가 등록되었습니다.");
         window.location.reload();
       } catch (error) {
@@ -215,7 +273,6 @@ export default function RestaurantDetailView({
       }
     },
     [
-      editingReviewId,
       formState.comment,
       formState.menu,
       formState.rating,
@@ -363,16 +420,6 @@ export default function RestaurantDetailView({
               </div>
 
               <div className={styles.formActions}>
-                {isEditMode && (
-                  <button
-                    type="button"
-                    className={`${styles.btn} ${styles.btnGhost}`}
-                    onClick={handleCancelEdit}
-                    disabled={isSubmitting}
-                  >
-                    취소
-                  </button>
-                )}
                 <button
                   type="submit"
                   className={`${styles.btn} ${styles.btnPrimary}`}
@@ -384,48 +431,126 @@ export default function RestaurantDetailView({
             </form>
 
             <div className={styles.reviewList}>
-              {restaurant.reviews.map((review) => (
-                <div key={review.id} className={styles.reviewItem}>
-                  <div className={styles.reviewRow}>
-                    <p className={styles.reviewComment}>{review.comment}</p>
-                    <span className={styles.stars}>
-                      {renderStars(review.rating)}
-                    </span>
-                  </div>
-                  {review.menu && (
-                    <p className={styles.reviewMenuDetail}>
-                      메뉴: {review.menu}
-                    </p>
-                  )}
-                  <div className={styles.reviewMeta}>
-                    <span className={styles.reviewNickname}>
-                      {review.nickname}
-                    </span>
-                    {review.userId === session?.user?.id && (
-                      <div className={styles.reviewActions}>
-                        <button
-                          type="button"
-                          className={`${styles.reviewButton} ${styles.reviewButtonEdit}`}
-                          onClick={() => handleStartEdit(review)}
-                          disabled={
-                            isSubmitting || deletingReviewId === review.id
+              {restaurant.reviews.map((review) => {
+                const isEditing = editingReviewId === review.id;
+                return (
+                  <div key={review.id} className={styles.reviewItem}>
+                    {isEditing ? (
+                      <form
+                        className={styles.reviewEditForm}
+                        onSubmit={handleEditSubmit}
+                      >
+                        <div className={styles.reviewRow}>
+                          <div className={styles.starPicker}>
+                            {Array.from({ length: 5 }, (_, index) => {
+                              const value = index + 1;
+                              const active =
+                                value <=
+                                (editHoverRating ||
+                                  Number(editFormState.rating) ||
+                                  0);
+                              return (
+                                <button
+                                  key={value}
+                                  type="button"
+                                  className={`${styles.starButton} ${
+                                    active ? styles.starActive : ""
+                                  }`}
+                                  onMouseEnter={() => setEditHoverRating(value)}
+                                  onMouseLeave={() => setEditHoverRating(0)}
+                                  onClick={() =>
+                                    handleEditChange("rating", String(value))
+                                  }
+                                >
+                                  ★
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className={styles.menuBox}>
+                            <input
+                              className={styles.input}
+                              placeholder="수정할 메뉴"
+                              value={editFormState.menu}
+                              onChange={(event) =>
+                                handleEditChange("menu", event.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+                        <textarea
+                          className={styles.textarea}
+                          placeholder="리뷰 내용을 수정해보세요."
+                          value={editFormState.comment}
+                          onChange={(event) =>
+                            handleEditChange("comment", event.target.value)
                           }
-                        >
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          className={`${styles.reviewButton} ${styles.reviewButtonDelete}`}
-                          onClick={() => handleDeleteReview(review.id)}
-                          disabled={deletingReviewId === review.id}
-                        >
-                          삭제
-                        </button>
-                      </div>
+                        />
+                        <div className={styles.formActions}>
+                          <button
+                            type="button"
+                            className={`${styles.btn} ${styles.btnGhost}`}
+                            onClick={handleCancelEdit}
+                            disabled={isSubmitting}
+                          >
+                            취소
+                          </button>
+                          <button
+                            type="submit"
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            disabled={isSubmitting}
+                          >
+                            리뷰 수정
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div className={styles.reviewRow}>
+                          <p className={styles.reviewComment}>
+                            {review.comment}
+                          </p>
+                          <span className={styles.stars}>
+                            {renderStars(review.rating)}
+                          </span>
+                        </div>
+                        {review.menu && (
+                          <p className={styles.reviewMenuDetail}>
+                            메뉴: {review.menu}
+                          </p>
+                        )}
+                        <div className={styles.reviewMeta}>
+                          <span className={styles.reviewNickname}>
+                            {review.nickname}
+                          </span>
+                          {review.userId === session?.user?.id && (
+                            <div className={styles.reviewActions}>
+                              <button
+                                type="button"
+                                className={`${styles.reviewButton} ${styles.reviewButtonEdit}`}
+                                onClick={() => handleStartEdit(review)}
+                                disabled={
+                                  isSubmitting || deletingReviewId === review.id
+                                }
+                              >
+                                수정
+                              </button>
+                              <button
+                                type="button"
+                                className={`${styles.reviewButton} ${styles.reviewButtonDelete}`}
+                                onClick={() => handleDeleteReview(review.id)}
+                                disabled={deletingReviewId === review.id}
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         </div>
