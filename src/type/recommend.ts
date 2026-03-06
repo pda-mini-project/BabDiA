@@ -1,4 +1,4 @@
-/** 사진 속 프리셋 8개 기준 */
+/** 사진 속 프리셋 7개 기준 (단체 제외) */
 export type PresetKey =
   | "sunny"
   | "rainy"
@@ -6,8 +6,7 @@ export type PresetKey =
   | "hot"
   | "tired"
   | "happy"
-  | "stressed"
-  | "social";
+  | "stressed";
 
 export type PresetItem = {
   key: PresetKey;
