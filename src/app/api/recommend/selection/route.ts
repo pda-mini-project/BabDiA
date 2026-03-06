@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { auth } from "@/lib/auth";
 import { dailyRestaurantSelections, restaurants } from "@/db/schema";
@@ -42,23 +42,31 @@ export async function POST(request: NextRequest) {
 
     const selectedDate = getSeoulDateString();
 
-    await db
-      .insert(dailyRestaurantSelections)
-      .values({
+    await db.transaction(async (tx) => {
+      const updated = await tx
+        .update(dailyRestaurantSelections)
+        .set({
+          restaurantId,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(dailyRestaurantSelections.userId, session.user.id),
+            eq(dailyRestaurantSelections.selectedDate, selectedDate),
+          ),
+        )
+        .returning({ id: dailyRestaurantSelections.id });
+
+      if (updated.length > 0) {
+        return;
+      }
+
+      await tx.insert(dailyRestaurantSelections).values({
         userId: session.user.id,
         restaurantId,
         selectedDate,
-      })
-      .onConflictDoUpdate({
-        target: [
-          dailyRestaurantSelections.userId,
-          dailyRestaurantSelections.selectedDate,
-        ],
-        set: {
-          restaurantId,
-          updatedAt: new Date(),
-        },
       });
+    });
 
     return NextResponse.json({
       ok: true,
