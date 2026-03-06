@@ -40,7 +40,9 @@ function createFormState(
       : tags.includes("국물둘다")
         ? "국물둘다"
         : "";
-  const selectedTags = new Set(tags.filter((t) => !SOUP_VALUES.includes(t)));
+  const selectedTags = new Set(
+    tags.filter((t) => !(SOUP_VALUES as readonly string[]).includes(t)),
+  );
   return {
     name: initialData.name,
     category: initialData.category || CATEGORIES[0].value,
