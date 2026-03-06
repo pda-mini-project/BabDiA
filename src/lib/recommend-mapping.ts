@@ -10,8 +10,10 @@
  */
 
 export type RecommendFilterCondition = {
-  /** 반드시 가지고 있어야 하는 태그 이름 (DB tags.name) */
+  /** 반드시 가지고 있어야 하는 태그 이름 (DB tags.name) - AND */
   requireTags: string[];
+  /** 그룹별로 하나라도 있으면 됨 (OR) - 예: 국물 있는 = 국물있음 OR 국물둘다 */
+  requireAnyOf: string[][];
   /** 가지고 있으면 안 되는 태그 이름 */
   excludeTags: string[];
   /** price_range 일치 (하나만) */
@@ -25,15 +27,19 @@ export type RecommendFilterCondition = {
 const TAG_REQUIRE: Record<string, string> = {
   밥: "밥",
   면: "면",
-  "국물 있는": "국물",
   매운: "매움",
   가능: "혼밥가능", // 혼밥 필터
   "없을 선호": "웨이팅X",
   "없어야 함": "신호등X",
 };
 
+/** 국물: 있음/없음 선택 시 (둘 다 있는 식당도 포함) */
+const SOUP_REQUIRE_ANY: Record<string, string[]> = {
+  "국물 있는": ["국물있음", "국물둘다"],
+  "국물 없는": ["국물없음", "국물둘다"],
+};
+
 const TAG_EXCLUDE: Record<string, string> = {
-  "국물 없는": "국물",
   "안 매운": "매움",
   불가: "혼밥가능",
 };
@@ -60,6 +66,7 @@ const CATEGORY_TAGS: Record<string, string> = {
 
 export function parseRecommendTags(tagStrings: string[]): RecommendFilterCondition {
   const requireTags: string[] = [];
+  const requireAnyOf: string[][] = [];
   const excludeTags: string[] = [];
   let priceRange: string | null = null;
   let maxWalkingMinutes: number | null = null;
@@ -75,6 +82,12 @@ export function parseRecommendTags(tagStrings: string[]): RecommendFilterConditi
     if (TAG_REQUIRE[tag]) {
       const dbTag = TAG_REQUIRE[tag];
       if (!requireTags.includes(dbTag)) requireTags.push(dbTag);
+    }
+    if (SOUP_REQUIRE_ANY[tag]) {
+      const group = SOUP_REQUIRE_ANY[tag];
+      if (!requireAnyOf.some((g) => g.length === group.length && g.every((x, i) => x === group[i]))) {
+        requireAnyOf.push(group);
+      }
     }
     if (TAG_EXCLUDE[tag]) {
       const dbTag = TAG_EXCLUDE[tag];
@@ -113,6 +126,7 @@ export function parseRecommendTags(tagStrings: string[]): RecommendFilterConditi
 
   return {
     requireTags,
+    requireAnyOf,
     excludeTags,
     priceRange,
     maxWalkingMinutes,

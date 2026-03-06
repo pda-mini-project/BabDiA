@@ -69,8 +69,18 @@ export async function getHomeRestaurantsPage(
               and ${tags.name} in ('밥', '면')
           )`,
         );
+      } else if (mealType === "soup") {
+        filters.push(
+          sql`exists (
+            select 1
+            from ${restaurantTags}
+            inner join ${tags} on ${tags.id} = ${restaurantTags.tagId}
+            where ${restaurantTags.restaurantId} = ${restaurants.id}
+              and ${tags.name} in ('국물있음', '국물둘다')
+          )`,
+        );
       } else {
-        const mealTagName = mealType === "soup" ? "국물" : mealType === "rice" ? "밥" : "면";
+        const mealTagName = mealType === "rice" ? "밥" : "면";
         filters.push(
           sql`exists (
             select 1
@@ -185,8 +195,18 @@ export async function getHomeRestaurantsCount(
               and ${tags.name} in ('밥', '면')
           )`,
         );
+      } else if (mealType === "soup") {
+        filters.push(
+          sql`exists (
+            select 1
+            from ${restaurantTags}
+            inner join ${tags} on ${tags.id} = ${restaurantTags.tagId}
+            where ${restaurantTags.restaurantId} = ${restaurants.id}
+              and ${tags.name} in ('국물있음', '국물둘다')
+          )`,
+        );
       } else {
-        const mealTagName = mealType === "soup" ? "국물" : mealType === "rice" ? "밥" : "면";
+        const mealTagName = mealType === "rice" ? "밥" : "면";
         filters.push(
           sql`exists (
             select 1
