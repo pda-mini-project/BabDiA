@@ -236,13 +236,16 @@ export default function RecommendResultContent() {
               어때?
             </h1>
 
-            <ResultCard restaurant={current} cardKey={cardKey} />
+            <ResultCard
+              restaurant={current}
+              cardKey={cardKey}
+              onSelectRestaurant={handleSelectRestaurant}
+              isSelecting={isSelecting}
+            />
             <ResultActions
               onReroll={handleReroll}
               onNaverMap={handleNaverMap}
               onDetail={handleDetail}
-              onSelectRestaurant={handleSelectRestaurant}
-              isSelecting={isSelecting}
             />
             {selectStatus && (
               <p style={{ marginTop: 8, color: "var(--muted, #6b7280)", fontWeight: 700 }}>

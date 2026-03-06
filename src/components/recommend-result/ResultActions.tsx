@@ -6,16 +6,12 @@ type ResultActionsProps = {
   onReroll: () => void;
   onNaverMap: () => void;
   onDetail: () => void;
-  onSelectRestaurant: () => void;
-  isSelecting: boolean;
 };
 
 export default function ResultActions({
   onReroll,
   onNaverMap,
   onDetail,
-  onSelectRestaurant,
-  isSelecting,
 }: ResultActionsProps) {
   return (
     <div className={styles.actions}>
@@ -42,15 +38,6 @@ export default function ResultActions({
       >
         <span className={styles.btnIcon}>📋</span>
         상세보기
-      </button>
-      <button
-        type="button"
-        className={`${styles.btn} ${styles.btnPick}`}
-        onClick={onSelectRestaurant}
-        disabled={isSelecting}
-      >
-        <span className={styles.btnIcon}>🍚</span>
-        {isSelecting ? "저장 중..." : "이 식당에서 먹기"}
       </button>
     </div>
   );
