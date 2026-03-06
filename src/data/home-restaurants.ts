@@ -24,6 +24,14 @@ export type GetHomeRestaurantsOptions = {
   offset: number;
 };
 
+/** 전체 개수 조회용 (limit/offset 없이 같은 필터만 적용) */
+export type GetHomeRestaurantsCountOptions = {
+  searchQuery: string;
+  minRating: number;
+  maxWalking: number;
+  mealType: HomeMealType;
+};
+
 export async function getHomeRestaurantsPage(
   options: GetHomeRestaurantsOptions,
 ): Promise<HomeRestaurantRow[]> {
@@ -146,5 +154,65 @@ export async function getHomeRestaurantsPage(
   } catch (error) {
     console.error("Failed to load restaurants for home:", error);
     return [];
+  }
+}
+
+export async function getHomeRestaurantsCount(
+  options: GetHomeRestaurantsCountOptions,
+): Promise<number> {
+  const { searchQuery, minRating, maxWalking, mealType } = options;
+  const keyword = searchQuery.trim();
+  const ratingFloor = Number.isFinite(minRating) ? minRating : 0;
+  const walkingCeil = Number.isFinite(maxWalking) ? maxWalking : 0;
+
+  try {
+    const filters: SQL[] = [];
+    if (keyword.length > 0) filters.push(ilike(restaurants.name, `%${keyword}%`));
+    if (ratingFloor > 0) {
+      filters.push(sql`${restaurants.rating} >= ${ratingFloor}`);
+    }
+    if (walkingCeil > 0) {
+      filters.push(sql`${restaurants.walkingMinutes} <= ${walkingCeil}`);
+    }
+    if (mealType !== "all") {
+      if (mealType === "rice_noodle") {
+        filters.push(
+          sql`exists (
+            select 1
+            from ${restaurantTags}
+            inner join ${tags} on ${tags.id} = ${restaurantTags.tagId}
+            where ${restaurantTags.restaurantId} = ${restaurants.id}
+              and ${tags.name} in ('밥', '면')
+          )`,
+        );
+      } else {
+        const mealTagName = mealType === "soup" ? "국물" : mealType === "rice" ? "밥" : "면";
+        filters.push(
+          sql`exists (
+            select 1
+            from ${restaurantTags}
+            inner join ${tags} on ${tags.id} = ${restaurantTags.tagId}
+            where ${restaurantTags.restaurantId} = ${restaurants.id}
+              and ${tags.name} = ${mealTagName}
+          )`,
+        );
+      }
+    }
+
+    const whereClause =
+      filters.length === 0
+        ? undefined
+        : filters.length === 1
+          ? filters[0]
+          : and(...filters);
+
+    const q = db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(restaurants);
+    const result = whereClause ? await q.where(whereClause) : await q;
+    return result[0]?.count ?? 0;
+  } catch (error) {
+    console.error("Failed to count restaurants for home:", error);
+    return 0;
   }
 }
