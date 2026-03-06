@@ -9,7 +9,6 @@ export const PRESET_MAP: Record<PresetKey, string[]> = {
   tired: ["도보 5분", "가능", "없을 선호", "10,000원 이하"],
   happy: ["거리_상관없음", "가격_상관없음", "있어도 됨", "양식"],
   stressed: ["매운", "국물 있는", "밥"],
-  social: ["한식", "중식", "있어도 됨", "불가"],
 };
 
 /** 사진 속 오늘의 프리셋: 맑음, 비와요, 추워요, 더워요, 피곤해, 신나는 날, 스트레스, 단체 (8개) */
@@ -21,7 +20,6 @@ export const PRESETS: PresetItem[] = [
   { key: "tired", icon: "😫", label: "피곤해" },
   { key: "happy", icon: "🥳", label: "신나는 날" },
   { key: "stressed", icon: "🧘‍♀️", label: "스트레스" },
-  { key: "social", icon: "👥", label: "단체" },
 ];
 
 /** 사진 속 세부 조건 그대로. 거리/가격/횡단보도 '상관없음'은 그룹별로 독립 */
