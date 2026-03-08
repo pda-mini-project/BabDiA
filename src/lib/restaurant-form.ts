@@ -131,8 +131,8 @@ export function buildSubmitPayload(form: AddRestaurantFormState): {
     ...mealTags,
     form.priceRange,
   ];
-  if (TRAFFIC_LIGHT_OPTIONS.find((o) => o.value === form.trafficLight)?.tag)
-    tags.push(TRAFFIC_LIGHT_OPTIONS.find((o) => o.value === form.trafficLight)!.tag);
+  const trafficTag = TRAFFIC_LIGHT_OPTIONS.find((o) => o.value === form.trafficLight)?.tag;
+  if (trafficTag) tags.push(trafficTag);
   const spicyTag = SPICY_OPTIONS.find((o) => o.value === form.spicyOption)?.tag;
   if (spicyTag) tags.push(spicyTag);
   const soloTag = SOLO_OPTIONS.find((o) => o.value === form.soloOption)?.tag;
