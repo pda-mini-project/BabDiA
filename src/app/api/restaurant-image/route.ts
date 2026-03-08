@@ -63,13 +63,34 @@ const GET_PHOTO_VIEWER_ITEMS_QUERY = `query getPhotoViewerItems($input: PhotoVie
  * GET /api/restaurant-image?url=https://map.naver.com/...
  * URL에서 businessId(place id) 추출 → getPhotoViewerItems 호출 → photos[0].originalUrl 반환
  */
+/** naver.me 단축 URL을 실제 URL로 확장 */
+async function expandShortUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, { method: "HEAD", redirect: "follow" });
+    return res.url || url;
+  } catch {
+    return url;
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const url = searchParams.get("url");
+    let url = searchParams.get("url");
     if (!url || !url.startsWith("https://")) {
       return NextResponse.json({ imageUrl: null }, { status: 400 });
     }
+
+    // naver.me 단축 URL이면 실제 URL로 확장
+    try {
+      const u = new URL(url);
+      if (u.hostname === "naver.me") {
+        url = await expandShortUrl(url);
+      }
+    } catch {
+      return NextResponse.json({ imageUrl: null }, { status: 400 });
+    }
+
     const allowedHosts = ["map.naver.com", "pcmap.place.naver.com"];
     try {
       const u = new URL(url);
