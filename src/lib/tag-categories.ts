@@ -23,6 +23,7 @@ export const TAG_NAME_TO_CATEGORY_CODE: Record<string, TagCategoryCode> = {
   // 거리
   "도보 5분": "distance",
   "도보 10분": "distance",
+  "도보 10분 초과": "distance",
   상관없음: "distance",
   // 국물 (있음/없음/둘 다 중 하나)
   국물있음: "soup",

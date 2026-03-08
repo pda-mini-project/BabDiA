@@ -5,11 +5,23 @@ import { useRouter } from "next/navigation";
 import {
   CATEGORIES,
   PRICE_RANGES,
-  ADD_RESTAURANT_TAGS,
   SOUP_TAG_OPTIONS,
+  WALK_OPTIONS,
+  MEAL_OPTIONS,
+  TRAFFIC_LIGHT_OPTIONS,
+  SPICY_OPTIONS,
+  SOLO_OPTIONS,
+  WAITING_OPTIONS,
   getInitialFormState,
+  buildSubmitPayload,
   type AddRestaurantFormState,
   type SoupOption,
+  type WalkOption,
+  type MealOption,
+  type TrafficLightOption,
+  type SpicyOption,
+  type SoloOption,
+  type WaitingOption,
 } from "@/lib/restaurant-form";
 import styles from "./add-restaurant.module.css";
 
@@ -22,15 +34,6 @@ export default function AddRestaurantForm() {
     value: AddRestaurantFormState[K],
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  }, []);
-
-  const toggleTag = useCallback((tag: string) => {
-    setForm((prev) => {
-      const next = new Set(prev.selectedTags);
-      if (next.has(tag)) next.delete(tag);
-      else next.add(tag);
-      return { ...prev, selectedTags: next };
-    });
   }, []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,22 +50,11 @@ export default function AddRestaurantForm() {
       setSubmitError(null);
       setIsSubmitting(true);
       try {
+        const payload = buildSubmitPayload(form);
         const res = await fetch("/api/restaurants", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: form.name,
-            category: form.category,
-            priceRange: form.priceRange,
-            walkMinutes: form.walkMinutes,
-            naverLink: form.naverLink,
-            selectedTags: [
-              ...(form.soupOption ? [form.soupOption] : []),
-              ...Array.from(form.selectedTags),
-            ],
-            recommendMenu: form.recommendMenu,
-            locationText: form.locationText,
-          }),
+          body: JSON.stringify(payload),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -101,9 +93,7 @@ export default function AddRestaurantForm() {
 
         <div className={styles.row2}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="category">
-              분류
-            </label>
+            <span className={styles.label}>분류 (필수)</span>
             <select
               id="category"
               className={styles.select}
@@ -118,9 +108,7 @@ export default function AddRestaurantForm() {
             </select>
           </div>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="priceRange">
-              가격대
-            </label>
+            <span className={styles.label}>가격대 (필수)</span>
             <select
               id="priceRange"
               className={styles.select}
@@ -136,38 +124,28 @@ export default function AddRestaurantForm() {
           </div>
         </div>
 
-        <div className={styles.row2}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="walkMinutes">
-              도보 거리 (분)
-            </label>
-            <input
-              id="walkMinutes"
-              className={styles.input}
-              type="number"
-              placeholder="예: 5"
-              min={0}
-              value={form.walkMinutes}
-              onChange={(e) => update("walkMinutes", e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="naverLink">
-              네이버 지도 링크
-            </label>
-            <input
-              id="naverLink"
-              className={styles.input}
-              type="url"
-              placeholder="https://map.naver.com/..."
-              value={form.naverLink}
-              onChange={(e) => update("naverLink", e.target.value)}
-            />
+        <div className={styles.field}>
+          <span className={styles.label}>📍 거리 (필수)</span>
+          <div className={styles.chips}>
+            {WALK_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`${styles.chip} ${form.walkOption === opt.value ? styles.chipActive : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="walkOption"
+                  checked={form.walkOption === opt.value}
+                  onChange={() => update("walkOption", opt.value as WalkOption)}
+                />
+                {opt.label}
+              </label>
+            ))}
           </div>
         </div>
 
         <div className={styles.field}>
-          <span className={styles.label}>국물 (하나만 선택)</span>
+          <span className={styles.label}>🍲 국물 (필수)</span>
           <div className={styles.chips}>
             {SOUP_TAG_OPTIONS.map((opt) => (
               <label
@@ -185,23 +163,119 @@ export default function AddRestaurantForm() {
             ))}
           </div>
         </div>
+
         <div className={styles.field}>
-          <span className={styles.label}>태그 (복수 선택)</span>
+          <span className={styles.label}>🍚 밥/면 (필수)</span>
           <div className={styles.chips}>
-            {ADD_RESTAURANT_TAGS.map((tag) => (
+            {MEAL_OPTIONS.map((opt) => (
               <label
-                key={tag}
-                className={`${styles.chip} ${form.selectedTags.has(tag) ? styles.chipActive : ""}`}
+                key={opt.value}
+                className={`${styles.chip} ${form.mealOption === opt.value ? styles.chipActive : ""}`}
               >
                 <input
-                  type="checkbox"
-                  checked={form.selectedTags.has(tag)}
-                  onChange={() => toggleTag(tag)}
+                  type="radio"
+                  name="mealOption"
+                  checked={form.mealOption === opt.value}
+                  onChange={() => update("mealOption", opt.value as MealOption)}
                 />
-                {tag}
+                {opt.label}
               </label>
             ))}
           </div>
+        </div>
+
+        <div className={styles.field}>
+          <span className={styles.label}>🚦 신호등 (필수)</span>
+          <div className={styles.chips}>
+            {TRAFFIC_LIGHT_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`${styles.chip} ${form.trafficLight === opt.value ? styles.chipActive : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="trafficLight"
+                  checked={form.trafficLight === opt.value}
+                  onChange={() => update("trafficLight", opt.value as TrafficLightOption)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.field}>
+          <span className={styles.label}>🌶️ 맵기 (필수)</span>
+          <div className={styles.chips}>
+            {SPICY_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`${styles.chip} ${form.spicyOption === opt.value ? styles.chipActive : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="spicyOption"
+                  checked={form.spicyOption === opt.value}
+                  onChange={() => update("spicyOption", opt.value as SpicyOption)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.field}>
+          <span className={styles.label}>🧑‍🤝‍🧑 혼밥 (필수)</span>
+          <div className={styles.chips}>
+            {SOLO_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`${styles.chip} ${form.soloOption === opt.value ? styles.chipActive : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="soloOption"
+                  checked={form.soloOption === opt.value}
+                  onChange={() => update("soloOption", opt.value as SoloOption)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.field}>
+          <span className={styles.label}>⌛ 웨이팅 (필수)</span>
+          <div className={styles.chips}>
+            {WAITING_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`${styles.chip} ${form.waitingOption === opt.value ? styles.chipActive : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="waitingOption"
+                  checked={form.waitingOption === opt.value}
+                  onChange={() => update("waitingOption", opt.value as WaitingOption)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="naverLink">
+            네이버 지도 링크
+          </label>
+          <input
+            id="naverLink"
+            className={styles.input}
+            type="url"
+            placeholder="https://map.naver.com/..."
+            value={form.naverLink}
+            onChange={(e) => update("naverLink", e.target.value)}
+          />
         </div>
 
         <div className={styles.field}>
