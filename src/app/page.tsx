@@ -1,5 +1,7 @@
 import HomePage from "@/features/home";
 
+export const dynamic = "force-dynamic";
+
 type HomePageProps = {
   searchParams: Promise<{
     q?: string;

@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { auth } from "@/lib/auth";
 import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 async function syncRestaurantRating(
@@ -23,6 +24,11 @@ async function syncRestaurantRating(
       rating: averageRow?.averageRating ?? "0.0",
     })
     .where(eq(restaurants.id, restaurantIdNumber));
+}
+
+function revalidateRestaurantPages(restaurantIdNumber: number) {
+  revalidatePath("/");
+  revalidatePath(`/restaurants/detail/${restaurantIdNumber}`);
 }
 
 export async function POST(request: NextRequest) {
@@ -65,6 +71,7 @@ export async function POST(request: NextRequest) {
 
       return inserted;
     });
+    revalidateRestaurantPages(restaurantIdNumber);
 
     return NextResponse.json({ success: true, result });
   } catch (error) {
@@ -124,6 +131,7 @@ export async function PUT(request: NextRequest) {
 
       await syncRestaurantRating(tx, Number(existing.restaurantId));
     });
+    revalidateRestaurantPages(Number(existing.restaurantId));
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -170,6 +178,7 @@ export async function DELETE(request: NextRequest) {
       await tx.delete(reviews).where(eq(reviews.uuid, uuid));
       await syncRestaurantRating(tx, Number(existing.restaurantId));
     });
+    revalidateRestaurantPages(Number(existing.restaurantId));
 
     return NextResponse.json({ success: true });
   } catch (error) {
