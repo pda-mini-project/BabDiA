@@ -2,6 +2,8 @@ import AppShell from "@/components/layouts/app-shell";
 import RestaurantDetailView from "@/components/restaurant-detail/RestaurantDetailView";
 import { getRestaurantDetail } from "@/data/restaurant-details";
 
+export const dynamic = "force-dynamic";
+
 type RestaurantDetailPageProps = {
   params: Promise<{
     restaurantId: string;

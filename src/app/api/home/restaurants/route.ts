@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getHomeRestaurantsPage, type HomeMealType, type HomeSort } from "@/data/home-restaurants";
 
+export const dynamic = "force-dynamic";
+
 const PAGE_SIZE = 20;
 
 function toHomeSort(sortBy: string | null): HomeSort {
