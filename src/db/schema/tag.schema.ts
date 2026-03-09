@@ -12,7 +12,6 @@ import { restaurants } from "./restaurant.schema";
 // ── 태그 카테고리 ──
 export const tagCategories = babdiaSchema.table("tag_categories", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
   code: varchar("code", { length: 100 }).notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -23,7 +22,6 @@ export const tags = babdiaSchema.table(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 255 }).notNull(),
-    groupName: varchar("group_name", { length: 255 }),
     tagCategoryId: integer("tag_category_id")
       .notNull()
       .references(() => tagCategories.id, { onDelete: "cascade" }),

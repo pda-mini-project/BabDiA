@@ -66,16 +66,16 @@ export function getCategoryCodeForTagName(tagName: string): TagCategoryCode | un
   return trimmed ? TAG_NAME_TO_CATEGORY_CODE[trimmed] : undefined;
 }
 
-/** 마이그레이션/시드용: (name, code) 목록 */
-export const TAG_CATEGORIES_SEED: { name: string; code: TagCategoryCode }[] = [
-  { name: "거리", code: "distance" },
-  { name: "국물", code: "soup" },
-  { name: "밥", code: "rice" },
-  { name: "면", code: "noodle" },
-  { name: "음식 종류", code: "cuisine" },
-  { name: "가격", code: "price" },
-  { name: "신호등", code: "crosswalk" },
-  { name: "맵기", code: "spicy" },
-  { name: "혼밥", code: "solo" },
-  { name: "웨이팅", code: "waiting" },
+/** 마이그레이션/시드용: code 목록 */
+export const TAG_CATEGORIES_SEED: { code: TagCategoryCode }[] = [
+  { code: "distance" },
+  { code: "soup" },
+  { code: "rice" },
+  { code: "noodle" },
+  { code: "cuisine" },
+  { code: "price" },
+  { code: "crosswalk" },
+  { code: "spicy" },
+  { code: "solo" },
+  { code: "waiting" },
 ];
