@@ -57,7 +57,7 @@ export const SOLO_OPTIONS = [
 
 /** 웨이팅: 하나만 선택 (필수) */
 export const WAITING_OPTIONS = [
-  { value: "없을 선호", label: "없을 선호", tag: "웨이팅X" as const },
+  { value: "없음 선호", label: "없음 선호", tag: "웨이팅X" as const },
   { value: "있어도 됨", label: "있어도 됨", tag: "있어도 됨" as const },
 ] as const;
 
