@@ -33,6 +33,23 @@ function renderStars(count: number) {
   ).join("");
 }
 
+function formatDetailTagLabel(tag: string) {
+  switch (tag) {
+    case "가능":
+    case "혼밥가능":
+      return "혼밥 가능";
+    case "불가":
+      return "혼밥 불가";
+    case "없음 선호":
+    case "웨이팅X":
+      return "웨이팅 없음 선호";
+    case "있어도 됨":
+      return "웨이팅 있어도 됨";
+    default:
+      return tag;
+  }
+}
+
 type RestaurantDetailViewProps = {
   restaurant: RestaurantDetailRecord;
   restaurantId?: string;
@@ -345,7 +362,7 @@ export default function RestaurantDetailView({
                   <div className={styles.tagList}>
                     {restaurant.tags.map((tag) => (
                       <span key={tag} className={styles.tag}>
-                        {tag}
+                        {formatDetailTagLabel(tag)}
                       </span>
                     ))}
                   </div>
