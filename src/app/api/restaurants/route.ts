@@ -11,6 +11,7 @@ import {
   getCategoryCodeForTagName,
   TAG_CATEGORIES_SEED,
 } from "@/lib/tag-categories";
+import { fetchNaverRestaurantImage } from "@/lib/naver-image";
 
 export type CreateRestaurantBody = {
   name: string;
@@ -73,16 +74,22 @@ export async function POST(request: Request) {
         ? walkingMinutes
         : null;
 
+    const trimmedNaverLink = naverLink?.trim() || null;
+    const imageUrl = trimmedNaverLink
+      ? await fetchNaverRestaurantImage(trimmedNaverLink)
+      : null;
+
     const [inserted] = await db
       .insert(restaurants)
       .values({
         name: trimmedName,
         category: category?.trim() || null,
-        naverLink: naverLink?.trim() || null,
+        naverLink: trimmedNaverLink,
         recommendMenu: recommendMenu?.trim() || null,
         locationText: locationText?.trim() || null,
         priceRange: priceRange?.trim() || null,
         walkingMinutes: walkingMinutesValue,
+        imageUrl,
       })
       .returning({ id: restaurants.id });
 
