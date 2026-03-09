@@ -139,7 +139,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       if (uniqueTags.length > 0) {
         await tx
           .insert(tagCategories)
-          .values(TAG_CATEGORIES_SEED.map(({ name: n, code }) => ({ name: n, code })))
+          .values(TAG_CATEGORIES_SEED.map(({ code }) => ({ code })))
           .onConflictDoNothing({ target: tagCategories.code });
 
         for (const tagName of uniqueTags) {

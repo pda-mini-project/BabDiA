@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       await db
         .insert(tagCategories)
         .values(
-          TAG_CATEGORIES_SEED.map(({ name, code }) => ({ name, code })),
+          TAG_CATEGORIES_SEED.map(({ code }) => ({ code })),
         )
         .onConflictDoNothing({ target: tagCategories.code });
 
