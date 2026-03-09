@@ -12,6 +12,7 @@ import {
   getCategoryCodeForTagName,
   TAG_CATEGORIES_SEED,
 } from "@/lib/tag-categories";
+import { fetchNaverRestaurantImage } from "@/lib/naver-image";
 
 type RouteParams = { params: Promise<{ restaurantId: string }> };
 
@@ -105,6 +106,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         ? walkingMinutes
         : null;
 
+    const trimmedNaverLink = naverLink?.trim() || null;
+    const imageUrl = trimmedNaverLink
+      ? await fetchNaverRestaurantImage(trimmedNaverLink)
+      : null;
+
     const uniqueTags = Array.from(
       new Set(
         selectedTags
@@ -119,11 +125,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         .set({
           name: trimmedName,
           category: category?.trim() || null,
-          naverLink: naverLink?.trim() || null,
+          naverLink: trimmedNaverLink,
           recommendMenu: recommendMenu?.trim() || null,
           locationText: locationText?.trim() || null,
           priceRange: priceRange?.trim() || null,
           walkingMinutes: walkingMinutesValue,
+          imageUrl,
         })
         .where(eq(restaurants.id, restaurantIdNumber))
         .returning({ id: restaurants.id });

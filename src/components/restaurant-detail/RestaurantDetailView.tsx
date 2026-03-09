@@ -55,9 +55,7 @@ export default function RestaurantDetailView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
   const [editHoverRating, setEditHoverRating] = useState(0);
-  const [placeImageUrl, setPlaceImageUrl] = useState<string | null>(
-    restaurant.imageUrl,
-  );
+  const placeImageUrl = restaurant.imageUrl ?? null;
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
   const [isSelectingRestaurant, setIsSelectingRestaurant] = useState(false);
@@ -231,37 +229,6 @@ export default function RestaurantDetailView({
     searchParamsString,
   ]);
 
-  useEffect(() => {
-    if (!restaurant.naverLink) {
-      return;
-    }
-
-    let active = true;
-    const controller = new AbortController();
-
-    fetch(
-      `/api/restaurant-image?url=${encodeURIComponent(restaurant.naverLink)}`,
-      {
-        signal: controller.signal,
-      },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (active && data?.imageUrl) {
-          setPlaceImageUrl(data.imageUrl);
-        }
-      })
-      .catch((error) => {
-        const { name } = error as { name?: string };
-        if (name === "AbortError") return;
-        console.error("Failed to load hero image", error);
-      });
-
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [restaurant.naverLink]);
 
   const heroImageStyle = placeImageUrl
     ? { backgroundImage: `url(${placeImageUrl})` }
