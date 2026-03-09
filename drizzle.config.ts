@@ -10,4 +10,5 @@ export default {
   dbCredentials: {
     url: databaseUrl,
   },
+  schemaFilter: ["babdia"],
 } satisfies Config;
