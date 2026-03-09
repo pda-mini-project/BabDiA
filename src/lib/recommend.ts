@@ -50,7 +50,7 @@ export const FILTERS: FilterGroup[] = [
   { label: "🚦 신호등", tags: ["없어야 함", "신호등_상관없음"] },
   { label: "🌶️ 맵기", tags: ["매운", "안 매운"] },
   { label: "🧑‍🤝‍🧑 혼밥", tags: ["가능", "불가"] },
-  { label: "⌛ 웨이팅", tags: ["없을 선호", "있어도 됨"] },
+  { label: "⌛ 웨이팅", tags: ["없음 선호", "있어도 됨"] },
 ];
 
 export function buildRecommendQuery(params: {
