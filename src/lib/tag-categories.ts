@@ -57,7 +57,7 @@ export const TAG_NAME_TO_CATEGORY_CODE: Record<string, TagCategoryCode> = {
   불가: "solo",
   // 웨이팅
   웨이팅X: "waiting",
-  "없을 선호": "waiting",
+  "없음 선호": "waiting",
   "있어도 됨": "waiting",
 };
 

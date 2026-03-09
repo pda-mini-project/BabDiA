@@ -78,7 +78,7 @@ function createFormState(
     tags.some((t) => t === "혼밥가능" || t === "가능") ? "가능" : "불가";
 
   const waitingOption: AddRestaurantFormState["waitingOption"] =
-    tags.some((t) => t === "웨이팅X" || t === "없을 선호") ? "없을 선호" : "있어도 됨";
+    tags.some((t) => t === "웨이팅X" || t === "없음 선호") ? "없음 선호" : "있어도 됨";
 
   return {
     name: initialData.name,
